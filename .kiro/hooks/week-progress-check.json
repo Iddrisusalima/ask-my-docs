@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Week Progress Check",
+      "trigger": "SessionStart",
+      "description": "On session start, prints today's date, which of the three project weeks is active, that week's theme, and a reminder that the calendar is shifted one week forward from the printed brief.",
+      "action": {
+        "type": "command",
+        "command": "$start=Get-Date '2026-09-21'; $now=Get-Date; $d=[math]::Floor(($now - $start).TotalDays); $w=[math]::Floor($d/7)+1; $themes=@('Embeddings & chunking foundations','Vector databases & retrieval','Generation, full pipeline & submission'); if($w -lt 1){$w=1}; if($w -gt 3){ Write-Output (\"Ask My Docs | {0} | Past Week 3 (project day {1}). Submission window has closed or was extended - confirm status with mentor before continuing.\" -f $now.ToString('ddd dd MMM yyyy'), ($d+1)); exit 0 }; Write-Output (\"Ask My Docs | {0} | WEEK {1} of 3: {2} | project day {3}. Calendar is shifted +1 week from the brief: W1 Sep21-27, W2 Sep28-Oct4, W3 Oct5-11. The brief's printed Oct 4 deadline is UNCONFIRMED - it now falls at the end of Week 2. Consult .kiro/specs/ask-my-docs/tasks.md for the current day's tasks.\" -f $now.ToString('ddd dd MMM yyyy'), $w, $themes[$w-1], ($d+1)); exit 0",
+        "timeout": 20
+      }
+    }
+  ]
+}

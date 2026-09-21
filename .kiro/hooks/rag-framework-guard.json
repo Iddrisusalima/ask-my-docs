@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "RAG Framework Guard",
+      "trigger": "PreToolUse",
+      "description": "Prompts for confirmation before any command or file edit that mentions LangChain, LlamaIndex, Haystack, LangGraph or similar. The brief requires building the RAG pipeline manually, so pulling in a framework should be a deliberate, discussed decision rather than a reflex.",
+      "matcher": "execute_pwsh|fs_write|str_replace|fs_append",
+      "action": {
+        "type": "command",
+        "command": "$payload=[Console]::In.ReadToEnd(); if($payload -match '(?i)(langchain|llama[-_]?index|haystack|langgraph|embedchain|semantic[-_]kernel|txtai)'){ Write-Output '{\"hookSpecificOutput\":{\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"This mentions a RAG framework (LangChain / LlamaIndex / Haystack / LangGraph / EmbedChain / txtai). Project 2 requires building chunk-embed-store-retrieve by hand - see .kiro/steering/learning-guardrails.md. Approve only if this is a deliberate exception, or if the framework is merely being named in prose or a comparison.\"}}' }; exit 0",
+        "timeout": 20
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Python Syntax Check on Save",
+      "trigger": "PostFileSave",
+      "description": "Byte-compiles every Python file in src/ and scripts/ whenever a .py file is saved, catching syntax errors immediately instead of at the next script run.",
+      "matcher": "\\.py$",
+      "action": {
+        "type": "command",
+        "command": "if(-not (Test-Path 'venv\\Scripts\\python.exe')){ exit 0 }; $files=@(); foreach($dir in @('src','scripts')){ if(Test-Path $dir){ $files += (Get-ChildItem -Path $dir -Recurse -Filter '*.py' -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }) } }; if($files.Count -eq 0){ exit 0 }; & '.\\venv\\Scripts\\python.exe' -m py_compile @files; if($LASTEXITCODE -ne 0){ Write-Error 'py_compile found a syntax error in src/ or scripts/ - see output above'; exit 1 }; Write-Output (\"py_compile ok - {0} file(s) in src/ and scripts/ parse cleanly\" -f $files.Count); exit 0",
+        "timeout": 60
+      }
+    }
+  ]
+}

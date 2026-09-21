@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Learning Log Reminder",
+      "trigger": "PostTaskExec",
+      "description": "After a spec task completes, reminds the agent to record measurements in the week's learning log and to leave the user's own-words explanations unwritten.",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task just finished. Before moving on, check two things.\n\nFirst, the learning log. If this task produced any measurement — similarity scores, chunk counts, timings, top-k comparisons, answer quality ratings — append the real numbers to the relevant file in notes/. The README and the demo video are built from this log, and numbers not recorded when observed are numbers lost. Record the values that were tried and rejected, not only the value chosen; \"why 500 and not 1000?\" is a question the user has to be able to answer.\n\nSecond, the boundary on prose. If this task touched a section the user must explain in their own words — what an embedding is without saying \"vector\", what semantic search means, why splitting matters, how Chroma compares to an alternative, or the README's \"What I Learned\" — leave it for them. Supply the raw material and at most a clearly labelled draft to react to. A finished paragraph handed over as submittable will not survive the mentor's follow-up question in the demo."
+      }
+    }
+  ]
+}

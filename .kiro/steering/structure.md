@@ -1,0 +1,83 @@
+---
+inclusion: always
+---
+
+# Project Structure & Conventions
+
+## Layout
+
+```
+ASK-MY-DOCS/
+├── .kiro/
+│   ├── steering/            # these files
+│   ├── specs/ask-my-docs/   # requirements, design, tasks
+│   └── hooks/               # automation
+├── src/                     # importable pipeline modules
+│   ├── __init__.py
+│   ├── embedder.py          # text -> embeddings, local or OpenAI
+│   ├── similarity.py        # hand-written cosine similarity
+│   ├── loader.py            # (Week 1 Wed) read .md and .pdf from a folder
+│   ├── chunker.py           # (Week 1 Wed) fixed-size chunks with overlap
+│   ├── store.py             # (Week 2) Chroma wrapper
+│   ├── retriever.py         # (Week 2) question -> top-k chunks
+│   └── generator.py         # (Week 3) context + question -> cited answer
+├── scripts/                 # numbered, runnable, demo-able
+│   └── 01_embedding_basics.py
+├── notes/                   # the user's written learning log per week
+├── sample-notes/            # committed test dataset, non-sensitive
+├── logs/                    # gitignored retrieval logs (Week 2 Fri)
+├── venv/                    # gitignored
+├── .env                     # gitignored, real secrets
+├── .env.example             # committed template
+├── requirements.txt
+└── README.md                # written in Week 3
+```
+
+Files listed above that do not exist yet are planned, not missing. Create them
+when their week arrives rather than stubbing them early.
+
+## Where things go
+
+- **`src/`** holds logic, imports cleanly, prints nothing except explicit
+  progress messages prefixed like `[embedder]`.
+- **`scripts/`** holds presentation: prints, section headers, formatted tables.
+  Scripts orchestrate `src/` modules and own all the narration.
+- **`notes/`** is the user's writing. Add measurements and results here; leave
+  the prose sections for the user (see `learning-guardrails.md`).
+
+Keeping print formatting out of `src/` is what lets the same retrieval function
+serve the CLI, the logs, and the demo without duplication.
+
+## Script path bootstrap
+
+Scripts run from the project root and need `src/` importable. Every script
+starts with:
+
+```python
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+```
+
+## Code conventions
+
+- `from __future__ import annotations` at the top of every module.
+- Type hints on all public functions.
+- Google-style docstrings with `Args:`, `Returns:`, `Raises:`.
+- Module-level docstrings explain the *concept*, not just the API — these are
+  part of how the user learns the material, and they are the first thing the
+  mentor reads. `src/embedder.py` and `src/similarity.py` set the standard.
+- Error messages must say what to do next, not just what broke. Compare
+  "invalid backend" against "Unknown embedding backend 'foo'. Expected one of:
+  local, openai. Check EMBEDDING_BACKEND in your .env file."
+- No single-letter variable names outside tight numeric loops.
+- British or American spelling, either is fine, just stay consistent per file.
+
+## Git
+
+- Commit at the end of each work session, message prefixed with the week and
+  day: `Week 1 Mon-Tue: ...`.
+- Never commit `.env`, `venv/`, `chroma_db/`, `logs/`, or the HF model cache.
+- `sample-notes/` **is** committed — the mentor must be able to run the tool
+  without supplying their own data.
+- The remote repo must be named `ask-my-docs`.
