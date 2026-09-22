@@ -252,8 +252,144 @@ chunks dropped before reaching the embedder.
 
 ## Fri — Wrap up Week 1
 
-_(not started)_
+Script: `scripts/03_embed_chunks_memory.py`
+
+```powershell
+.\venv\Scripts\python.exe scripts\03_embed_chunks_memory.py --folder sample-notes
+```
+
+A complete semantic search engine with no database in it. The store is a list of
+dicts; the search is a `for` loop over Monday's `cosine_similarity`. Built this
+way deliberately, so that when Chroma arrives on Monday I know exactly which loop
+it replaced.
+
+Same corpus caveat as Wed–Thu: ran against `.kiro/` (7 files, 55,598 chars, 155
+chunks at 500/100), not my own notes.
 
 ### What "semantic search" means, in plain language
 
-_(3–4 sentences, to fill in)_
+_(3–4 sentences, MINE TO WRITE. On the mentor's self-check list, and the opening
+line of the demo video. Plain language = readable aloud to someone who has never
+heard the word "embedding". Evidence I can draw on: Monday's 0.617 vs 0.031 with
+no shared keywords; Part 4's keyword-versus-semantic disagreement; Part 3's
+what-happens-when-nothing-matches. Do not submit anything from this bracket.)_
+
+### The store, measured
+
+| | |
+| --- | --- |
+| Chunks embedded | 155 |
+| Numbers per chunk | 384 |
+| Numbers in the store | 59,520 |
+| Time to embed all of them | **29.90s** (192.9ms per chunk) |
+| Store type | `list` of `dict` |
+
+Each entry holds three things: the 384 numbers, the chunk text, and where it came
+from. A vector database stores exactly the same three things — the difference is
+only how it searches them.
+
+192.9ms per chunk on CPU is the number that justifies choosing local embeddings
+for experimentation but would not survive a large corpus. Ingestion is a one-time
+cost per change to the notes, so it is tolerable; it would not be if it ran per
+query.
+
+### Search timing — and why the two phases must be timed separately
+
+| phase | time | scales with corpus? |
+| ----- | ---- | ------------------- |
+| Embedding the question | ~27ms | **no** — fixed cost |
+| Scanning all 155 chunks | ~15ms | **yes** |
+| Per comparison | 95.0µs | — |
+
+Embedding the question is 65% of the current total. My first version of the script
+timed both together and divided by chunk count, which produced a per-comparison
+figure roughly 3x too high and a scaling projection that was simply wrong. Worth
+remembering: a fixed cost mixed into a per-item measurement makes small corpora
+look slow and large ones look fast.
+
+Projecting the scan alone:
+
+| corpus | comparisons | projected scan |
+| ------ | ----------- | -------------- |
+| now | 155 | 14.7ms |
+| 100x | 15,500 | 1.5s |
+| 10,000x | 1,550,000 | 147.3s |
+
+### What the database actually buys us — the answer that surprised me
+
+At 155 chunks the loop is instant and Chroma would be pure overhead. More
+importantly, **the loop is exact**: it compares every chunk, so it cannot miss a
+match.
+
+Chroma's HNSW index is *approximate*. It deliberately skips most comparisons,
+accepting a small chance of missing a true nearest neighbour in exchange for
+search time that barely grows with corpus size.
+
+So the database is not more correct than my `for` loop. It is **less** correct and
+far faster. I had assumed "real database" meant "better"; it means "a different
+point on a speed/accuracy trade". Knowing which direction that trade runs is the
+entire payoff of having written the loop first, and it is what I should say when
+asked how a vector database finds similar chunks.
+
+### Part 3 — the no-good-answer test, and a result that contradicts Monday
+
+Asked a question with no answer anywhere in the corpus: *"What time does the
+corner shop close on Sundays?"*
+
+| | score | chunk |
+| --- | ----- | ----- |
+| 1 | 0.3386 | `product.md#4` — a schedule table full of dates and day names |
+| 2 | 0.3085 | `product.md#5` |
+| 3 | 0.2794 | `tasks.md#0` |
+
+The scan still returned three chunks. A linear scan always returns its top-k —
+there is no such thing as "no result". Top hit scored 0.3386 because the question
+mentions **Sundays** and that chunk contains **Sun Oct 4**. The model is doing its
+job: those genuinely are related in meaning. It has no concept of whether a
+relation *answers* the question.
+
+Now the part that matters. The nine scores from Part 2's legitimate questions:
+the lowest was **0.3655**, against the unanswerable question's **0.3386**. A
+margin of **0.0269**.
+
+A floor does separate them here — but only barely. Monday's 0.617-versus-0.031
+gap made a threshold look obvious; against a real corpus the usable gap is 20x
+narrower. The reason is structural: with a few hundred chunks, *something* will
+always be somewhat close to anything you ask.
+
+Conclusion for later weeks: **a score floor is necessary but not sufficient.** The
+prompt itself has to give the model permission to refuse. Two independent
+defences, because neither is reliable alone. `MIN_SCORE` must not be hardcoded
+from this one measurement — Week 2 needs to widen the test first.
+
+### Part 4 — semantic versus keyword, on the same question
+
+Question phrased to avoid the vocabulary of its own answer: *"Why would splitting
+a document in the wrong place lose information?"*
+
+Overlap between the two top-3 lists: **0 of 3**. Completely different results.
+
+The giveaway was in the keyword scores: all three tied at exactly **0.2857**.
+Keyword matching found the same shallow count of word hits across many chunks and
+had no way to rank between them, so its ordering is arbitrary. Semantic search
+produced distinct, ordered scores.
+
+Honest caveat: the two methods disagreeing proves they rank *differently*, not
+that semantic ranked *better*. Deciding that requires reading the chunks and
+judging them, and this corpus is specification boilerplate rather than notes, so
+the comparison is muddier than it will be on real material. Re-run on my own
+notes, where I know what the right answer should be.
+
+### Week 1 status
+
+| deliverable | state |
+| ----------- | ----- |
+| Embeddings generated, length printed | done |
+| Similar vs unrelated cosine comparison | done — 0.617 vs 0.031 |
+| Chunking with fixed size + overlap | done |
+| Chunk size / overlap experiments | done on interim corpus, **re-run on own notes** |
+| Every chunk embedded, held in memory | done — 155 chunks, list of dicts |
+| "What an embedding is" in my own words | **outstanding** |
+| "Why splitting matters" in my own words | **outstanding** |
+| "What semantic search means" in my own words | **outstanding** |
+| 5–10 of my own notes in `sample-notes/` | **outstanding** |

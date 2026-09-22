@@ -99,17 +99,26 @@ something from the user before they can start.
   - _Requirements: 11.3, 11.4_
 
 - [ ] 8. Week 1 wrap-up — Fri
-- [ ] 8.1 Write `scripts/03_embed_chunks_memory.py` embedding every chunk into a plain list
-  - deliberately no database yet; a hand-written linear scan over `cosine_similarity`
+- [x] 8.1 Write `scripts/03_embed_chunks_memory.py` embedding every chunk into a plain list
+  - 155 chunks embedded in 29.90s (192.9ms each, CPU); store is a `list` of `dict`
   - _Requirements: 1.7, 2.1_
-- [ ] 8.2 Search that list with a test question and print ranked results
-  - this is the baseline Chroma must justify itself against on Monday
+- [x] 8.2 Search that list with a test question and print ranked results
+  - hand-written linear scan over `cosine_similarity`; this is the baseline Chroma must beat
   - _Requirements: 6.2, 6.3_
-- [ ] 8.3 Record timing and chunk count as the pre-database baseline
+- [x] 8.3 Record timing and chunk count as the pre-database baseline
+  - question embedding ~27ms (fixed) vs scan ~15ms (grows); 95.0µs per comparison
+  - first version wrongly lumped both phases together, inflating per-comparison cost ~3x
   - _Requirements: 11.2_
+- [x] 8.3a Test a question with no answer in the corpus
+  - unanswerable question scored 0.3386; lowest legitimate score 0.3655; **margin only 0.0269**
+  - Monday's 0.617/0.031 gap does not survive a real corpus - a score floor is necessary but not sufficient, so Week 3's prompt must also permit refusal
+  - _Requirements: 6.6, 8.4_
+- [x] 8.3b Compare semantic search against a keyword baseline
+  - 0 of 3 overlap in top-3; all keyword scores tied at 0.2857, so its ranking was arbitrary
+  - _Requirements: 2.6_
 - [ ] 8.4 User writes 3–4 plain-language sentences on what semantic search means
   - _Requirements: 11.3, 11.4_
-- [ ] 8.5 Commit Week 1 work
+- [x] 8.5 Commit Week 1 work
 
 ---
 
