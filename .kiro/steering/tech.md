@@ -71,6 +71,27 @@ collection.
 ```powershell
 # Week 1 Mon-Tue: embeddings and cosine similarity demo
 .\venv\Scripts\python.exe scripts\01_embedding_basics.py
+
+# Week 1 Wed-Thu: chunking pipeline, boundary demo, size/overlap sweep
+.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder sample-notes
+
+# one configuration only, for a quick check
+.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder sample-notes --chunk-size 800 --overlap 160
+```
+
+## Console encoding
+
+The Windows console defaults to cp1252, which cannot encode arrows, em dashes or
+curly quotes — all common in real notes. Printing one raises `UnicodeEncodeError`
+and kills the script, with the crash coming from *display* rather than from any
+logic fault.
+
+Every script must call `enable_utf8_output()` from `src/console.py` before
+printing. When running a script from PowerShell and expecting non-ASCII output,
+also set the console encoding so the text renders rather than mojibakes:
+
+```powershell
+[Console]::OutputEncoding=[Text.Encoding]::UTF8
 ```
 
 Scripts in `scripts/` are numbered in the order the brief introduces them and

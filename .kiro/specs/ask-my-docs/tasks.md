@@ -57,37 +57,45 @@ something from the user before they can start.
   - nothing in section 6 or 7 can be measured without real documents
   - _Requirements: 12.2_
 
-- [ ] 6. Document loading — Wed
-- [ ] 6.1 Write `src/loader.py` with a `LoadedDocument` dataclass and folder discovery
+- [x] 6. Document loading — Wed
+- [x] 6.1 Write `src/loader.py` with a `LoadedDocument` dataclass and folder discovery
   - recurse subfolders, accept `.md`, `.markdown`, `.txt`, `.pdf`
   - _Requirements: 3.1, 3.7_
-- [ ] 6.2 Extract PDF text page by page, one `LoadedDocument` per page
-  - page numbers retained now so page-level citations are possible in Week 3
+- [x] 6.2 Extract PDF text page by page, one `LoadedDocument` per page
+  - verified on an 11-page PDF: 11 pages → 11 documents → 21 chunks, page numbers reaching citations as `file.pdf#1 (p.2)`
   - _Requirements: 3.2_
-- [ ] 6.3 Handle per-file failures without aborting the run
-  - undecodable file, PDF with no text layer, missing folder, folder with no supported files
+- [x] 6.3 Handle per-file failures without aborting the run
+  - verified: missing folder reports the resolved path; empty folder names supported extensions; non-UTF-8 and empty files skipped by name
+  - scanned-PDF path written but unverified — needs a real scanned file
   - _Requirements: 3.3, 3.4, 3.5, 3.6_
+- [x] 6.4 Fix cp1252 console crash on non-ASCII document text
+  - `UnicodeEncodeError` on a `→`; `src/console.py` switches stdout to UTF-8 with `errors="replace"`
+  - _Requirements: 10.4_
 
 - [ ] 7. Chunking pipeline — Wed–Thu
-- [ ] 7.1 Write `src/chunker.py` with `chunk_text` producing fixed-size overlapping windows
+- [x] 7.1 Write `src/chunker.py` with `chunk_text` producing fixed-size overlapping windows
   - advance by `chunk_size - overlap`; reject overlap >= chunk_size
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.7_
-- [ ] 7.2 Soften chunk boundaries toward paragraph, then sentence, then whitespace breaks
-  - bounded backward scan, never exceeds the size limit, never cuts mid-word
+- [x] 7.2 Soften chunk boundaries toward paragraph, then sentence, then whitespace breaks
+  - search window floored at `overlap + 1` to guarantee forward progress; verified on a 2,000-character string with no whitespace
   - _Requirements: 4.8_
-- [ ] 7.3 Attach `Chunk` metadata: source, chunk index, character offset, page
-  - readable `chunk_id` such as `notes.md#3` so citations mean something on screen
+- [x] 7.3 Attach `Chunk` metadata: source, chunk index, character offset, page
+  - chunk numbering runs per source *file*, not per page, so multi-page PDFs do not collide at `#0`
   - _Requirements: 4.6, 9.1, 9.2_
-- [ ] 7.4 Discard empty and whitespace-only chunks before they reach the embedder
+- [x] 7.4 Discard empty and whitespace-only chunks before they reach the embedder
   - _Requirements: 4.5, 1.6_
-- [ ] 7.5 Write `scripts/02_chunking_demo.py` comparing size/overlap settings on real notes
-  - print chunk counts, boundary text, and a sample chunk per configuration
+- [x] 7.5 Write `scripts/02_chunking_demo.py` comparing size/overlap settings on real notes
+  - six configurations swept; Part 3 demonstrates a planted fact severed by a boundary
   - _Requirements: 4.7, 10.5_
-- [ ] 7.6 Run the experiment across at least three size/overlap pairs and log observations
-  - record what changed, including a fact that overlap rescued from a boundary split
+- [x] 7.6 Run the experiment across at least three size/overlap pairs and log observations
+  - six pairs measured; boundary test shows 500/0 hard cuts leaving the fact in **no chunk at all**
+  - 20% overlap costs 1.26x storage; 500/0 → 500/100 raises chunk count 120 → 149
   - _Requirements: 11.2_
+- [ ] 7.6a Re-run the sweep against `sample-notes/` once the user's own notes are in
+  - the logged table describes `.kiro/` docs, used as an interim corpus; the README must describe the shipped dataset
+  - _Requirements: 11.2, 12.2_
 - [ ] 7.7 User writes, in their own words, why splitting matters
-  - context limits and relevance precision; supply measurements, not prose
+  - context limits and relevance precision; measurements supplied, prose deliberately left blank
   - _Requirements: 11.3, 11.4_
 
 - [ ] 8. Week 1 wrap-up — Fri

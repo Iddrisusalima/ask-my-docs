@@ -25,8 +25,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import numpy as np
 
+from src.console import enable_utf8_output
 from src.embedder import Embedder
 from src.similarity import cosine_similarity, similarity_matrix
+
+enable_utf8_output()
 
 # Three sentences that mean roughly the same thing, with deliberately
 # different wording. Only one word ("sourdough"/"bread") overlaps at all -

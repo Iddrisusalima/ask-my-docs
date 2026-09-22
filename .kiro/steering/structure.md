@@ -16,13 +16,15 @@ ASK-MY-DOCS/
 │   ├── __init__.py
 │   ├── embedder.py          # text -> embeddings, local or OpenAI
 │   ├── similarity.py        # hand-written cosine similarity
-│   ├── loader.py            # (Week 1 Wed) read .md and .pdf from a folder
-│   ├── chunker.py           # (Week 1 Wed) fixed-size chunks with overlap
+│   ├── console.py           # UTF-8 stdout, so cp1252 cannot crash on a dash
+│   ├── loader.py            # read .md, .txt and .pdf from a folder
+│   ├── chunker.py           # fixed-size chunks with overlap
 │   ├── store.py             # (Week 2) Chroma wrapper
 │   ├── retriever.py         # (Week 2) question -> top-k chunks
 │   └── generator.py         # (Week 3) context + question -> cited answer
 ├── scripts/                 # numbered, runnable, demo-able
-│   └── 01_embedding_basics.py
+│   ├── 01_embedding_basics.py
+│   └── 02_chunking_demo.py
 ├── notes/                   # the user's written learning log per week
 ├── sample-notes/            # committed test dataset, non-sensitive
 ├── logs/                    # gitignored retrieval logs (Week 2 Fri)
