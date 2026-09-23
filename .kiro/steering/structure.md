@@ -26,6 +26,7 @@ ASK-MY-DOCS/
 │   ├── 01_embedding_basics.py
 │   └── 02_chunking_demo.py
 ├── notes/                   # the user's written learning log per week
+├── presentation/            # mentor check-in decks + the script that builds them
 ├── sample-notes/            # committed test dataset, non-sensitive
 ├── logs/                    # gitignored retrieval logs (Week 2 Fri)
 ├── venv/                    # gitignored
@@ -83,3 +84,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 - `sample-notes/` **is** committed — the mentor must be able to run the tool
   without supplying their own data.
 - The remote repo must be named `ask-my-docs`.
+
+## Presentation decks
+
+`presentation/build_week1_deck.py` generates `week1-review.pptx` for the mentor
+check-in. Decks are generated from a script rather than hand-edited so that every
+figure traces back to a recorded run, and so a deck can be regenerated after new
+measurements instead of being patched by hand.
+
+Two rules for decks:
+
+- **Every number must already exist in `notes/`.** If a figure is not in the
+  learning log, it does not belong on a slide. The log is the source of truth.
+- **Own-words slides stay blank.** Slides covering explanations the user must
+  give verbally are left as placeholders with the evidence listed underneath,
+  per `learning-guardrails.md`. Filling them in would defeat the purpose.
+
+Needs `python-pptx`, deliberately **not** in `requirements.txt` — the tool does
+not need it, and a reviewer cloning the repo should not have to install it:
+
+```powershell
+.\venv\Scripts\python.exe -m pip install python-pptx==1.0.2
+.\venv\Scripts\python.exe presentation\build_week1_deck.py
+```
+
+To check a deck renders correctly, export to PNG through PowerPoint COM and look
+at the slides. If the COM server errors with `CO_E_SERVER_EXEC_FAILURE`, kill
+stale `POWERPNT` processes first.
