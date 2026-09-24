@@ -125,19 +125,43 @@ citation in the demo means something to a human watching the video.
 ### `src/store.py` — Week 2 Mon–Tue
 
 ```python
+@dataclass(frozen=True)
+class StoredMatch:
+    chunk: Chunk
+    distance: float        # raw Chroma distance, lower is better
+
 class VectorStore:
     def __init__(self, path: str = "chroma_db", collection: str = "notes")
-    def reset(self, embedding_model: str) -> None
-    def add_chunks(self, chunks: list[Chunk], embeddings: list[list[float]]) -> None
-    def query(self, embedding: list[float], top_k: int) -> list[RetrievedChunk]
+    def reset(self, embedding_model: str, dimensions: int) -> None
+    def add_chunks(self, chunks: list[Chunk], embeddings: list[list[float]]) -> int
+    def query(self, embedding: list[float], top_k: int) -> list[StoredMatch]
     def count(self) -> int
+    def describe_index(self) -> dict
     def embedding_model(self) -> str | None
+    def assert_model_matches(self, embedding_model: str) -> None
 ```
 
-Chroma with `PersistentClient`, cosine distance configured explicitly via
-`metadata={"hnsw:space": "cosine"}` — the default is L2, which would rank
-differently from the cosine similarity taught in Week 1 and quietly break the
-mental model the user just built.
+**Built, Week 2 Mon–Tue.** Two deviations from the original sketch:
+
+`query` returns `StoredMatch` (carrying a raw distance) rather than
+`RetrievedChunk` (carrying a similarity). `RetrievedChunk` lives in
+`retriever.py`, so having the store produce it would invert the dependency.
+Keeping distance as far as the store boundary, and converting exactly once in the
+retriever, is also what enforces the "every score the user sees points the same
+way" rule below.
+
+The pinned version is **`chromadb==1.5.9`**, not 0.5.x. The older line depends on
+`chroma-hnswlib`, a C++ extension with no Python 3.12 wheel; pip falls back to
+compiling it and fails without Visual Studio build tools. The 1.x line replaced
+that binding with a Rust core and ships prebuilt wheels.
+
+Cosine distance is configured explicitly via
+`configuration={"hnsw": {"space": "cosine"}}`. Chroma's default is **squared
+L2** — measured directly: for perpendicular unit vectors the default reports
+distance 2.0 where cosine reports 1.0. For L2-normalised embeddings such as
+MiniLM's the two rank identically, so this would not surface as a visible bug
+today; it would surface as subtly worse retrieval the moment a non-normalising
+model was used. One line to remove the risk.
 
 Embeddings are computed by our own `Embedder` and passed in, rather than letting
 Chroma attach its own embedding function. Keeping that boundary visible is the

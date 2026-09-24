@@ -27,7 +27,7 @@ Pinned in `requirements.txt`. Installed with:
 | `sentence-transformers` | 3.3.1 | local embedding model (pulls torch, CPU build) |
 | `openai` | 1.59.6 | optional embedding backend, and Week 3 chat model |
 | `pypdf` | 5.1.0 | PDF text extraction |
-| `chromadb` | 0.5.23 | vector database, Week 2 |
+| `chromadb` | 1.5.9 | vector database, Week 2 |
 
 Before adding anything new, check it against the allow/deny list in
 `learning-guardrails.md`.
@@ -53,6 +53,33 @@ Run large downloads as a background process and poll the cache size to track
 progress, rather than blocking a foreground call that will time out. Once the
 model is cached, `$env:HF_HUB_OFFLINE=1` makes startup fast and avoids network
 checks entirely.
+
+## Chroma
+
+Two things that will waste an hour if forgotten.
+
+**Install.** Use the 1.x line. `chromadb` 0.5.x depends on `chroma-hnswlib`, a
+C++ extension with no Python 3.12 wheel — pip falls back to compiling it and
+fails with `Microsoft Visual C++ 14.0 or greater is required`. The 1.x line
+replaced that binding with a Rust core and ships prebuilt wheels.
+
+**Distance metric.** Chroma's default space is **squared L2**, not cosine. Always
+create collections with:
+
+```python
+configuration={"hnsw": {"space": "cosine"}}
+```
+
+Measured: for perpendicular unit vectors the default reports distance 2.0 where
+cosine reports 1.0. With cosine, `similarity = 1 - distance` recovers Week 1's
+scale exactly. For L2-normalised embeddings the two rank the same way, so getting
+this wrong does not raise an error — it silently degrades retrieval the moment a
+non-normalising model is used.
+
+Chroma writes to `chroma_db/`, which is gitignored. It is rebuilt by ingestion, so
+deleting it is always safe.
+
+To silence its telemetry notice in scripted runs: `$env:ANONYMIZED_TELEMETRY='False'`.
 
 ## Configuration
 

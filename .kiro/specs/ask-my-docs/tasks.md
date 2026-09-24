@@ -124,27 +124,37 @@ something from the user before they can start.
 
 ## Week 2 — Sep 28–Oct 4 — Vector Databases & Retrieval
 
-- [ ] 9. Vector store — Mon–Tue
-- [ ] 9.1 Write `src/store.py` wrapping a Chroma `PersistentClient`
-  - configure cosine space explicitly via `metadata={"hnsw:space": "cosine"}`; the L2 default would rank differently from Week 1's scores
+- [x] 9. Vector store — Mon–Tue
+- [x] 9.0 Resolve the chromadb install failure
+  - `chromadb==0.5.23` needs `chroma-hnswlib`, which has no Python 3.12 wheel and fails to compile without MSVC build tools
+  - moved to `chromadb==1.5.9` (Rust core, prebuilt wheels); numpy and sentence-transformers still import cleanly
+- [x] 9.1 Write `src/store.py` wrapping a Chroma `PersistentClient`
+  - cosine set explicitly via `configuration={"hnsw": {"space": "cosine"}}`
+  - probed the default: squared L2 gives distance 2.0 where cosine gives 1.0 for perpendicular unit vectors
   - _Requirements: 5.1, 5.2_
-- [ ] 9.2 Pass our own embeddings in rather than attaching Chroma's embedding function
+- [x] 9.2 Pass our own embeddings in rather than attaching Chroma's embedding function
   - keeps the embed step visible, which is the point of having built it
   - _Requirements: 5.2_
-- [ ] 9.3 Make `reset()` delete and recreate the collection for idempotent re-ingestion
+- [x] 9.3 Make `reset()` delete and recreate the collection for idempotent re-ingestion
+  - verified: reset+add run twice leaves count at 1, no duplicates
   - _Requirements: 5.3_
-- [ ] 9.4 Store the producing model name as collection metadata and detect mismatches
-  - silent failure mode otherwise: plausible-looking nonsense instead of an error
+- [x] 9.4 Store the producing model name as collection metadata and detect mismatches
+  - verified both directions: matching model passes, `openai:text-embedding-3-small` against a MiniLM index is rejected
   - _Requirements: 5.5_
-- [ ] 9.5 Report an actionable message when the collection is empty or missing
-  - name the ingestion command to run
+- [x] 9.5 Report an actionable message when the collection is empty or missing
+  - both cases name the ingestion command; `count()` returns 0 rather than raising
   - _Requirements: 5.6_
-- [ ] 9.6 Write `scripts/04_ingest.py` running load → chunk → embed → index
-  - report documents processed and chunks indexed
+- [x] 9.6 Write `scripts/04_ingest.py` running load → chunk → embed → index
+  - 159 chunks: embed 61.79s, index 0.54s — embedding dominates ingestion by ~115x
+  - confirms persistence by reopening the collection with a fresh `VectorStore`
   - _Requirements: 5.4, 10.1, 10.3_
-- [ ] 9.7 Read up on HNSW and record how approximate nearest-neighbour search avoids comparing against every chunk
-  - contrast against the Week 1 Friday linear scan
+- [x] 9.7 Read up on HNSW and record how approximate nearest-neighbour search avoids comparing against every chunk
+  - layered proximity graphs, greedy descent, `ef_search` / `ef_construction` / `max_neighbors`, recorded with sources
   - _Requirements: 11.1_
+- [x] 9.8 Measure the approximate index against Friday's exact scan
+  - 10/10 top-5 agreement — expected at 159 chunks, and **not** evidence that HNSW never misses
+  - similarity reproduces Friday's hand-written cosine to 4dp (0.6690 / 0.6070 / 0.5247), cross-validating both implementations
+  - _Requirements: 6.3, 11.2_
 
 - [ ] 10. Retrieval — Wed–Thu
 - [ ] 10.1 Write `src/retriever.py` embedding the question with the same model as the index

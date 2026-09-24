@@ -21,6 +21,9 @@ chroma_db/
 logs/
 *.log
 
+# Office lock files, created while a deck is open
+~$*
+
 # OS / editor
 .DS_Store
 Thumbs.db

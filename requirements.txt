@@ -12,4 +12,7 @@ openai==1.59.6
 pypdf==5.1.0
 
 # Week 2 - vector database
-chromadb==0.5.23
+# 1.x ships prebuilt wheels (Rust core). The older 0.5.x line depends on
+# chroma-hnswlib, which has no Python 3.12 wheel and tries to compile C++,
+# failing without Visual Studio build tools installed.
+chromadb==1.5.9
