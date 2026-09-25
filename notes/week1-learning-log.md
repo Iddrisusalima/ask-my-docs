@@ -27,16 +27,28 @@ later.
 
 ### What an embedding actually is
 
-_(REWRITE THIS IN MY OWN WORDS — the self-check says I must explain it without
-using "vector" as a cop-out. Draft below is a starting point to react to, not
-something to submit as-is.)_
+> **DRAFT — rewrite in my own voice before submitting.** The self-check asks me to
+> explain this without using "vector" as a cop-out, and a mentor will ask a
+> follow-up. Borrowed phrasing fails at the follow-up, not at the first sentence.
 
-Draft: an embedding model reads text and returns a fixed-size list of numbers
-that act as coordinates on a map of meaning. Text that means similar things gets
-placed close together on that map, even when the wording is completely
-different. The model learned the layout of the map during training, so the
-coordinates are not something a human designed or can label one by one — only
-the distances between points carry information.
+An embedding is what you get when a model reads text and turns it into a position
+on a map of meaning. Text that means similar things lands in nearby positions,
+even when the actual words are completely different. The model worked out the
+layout of that map during training, so nobody chose what each number stands for —
+and one number on its own tells you nothing. What carries the information is how
+close two pieces of text end up to each other.
+
+**Follow-ups I should be ready for:**
+
+- *What makes two things land near each other?* The model was trained on huge
+  amounts of text and learned which words and phrases appear in similar
+  situations. Nobody programmed the positions.
+- *Why 384 numbers?* That is just what this model outputs. A larger model uses
+  more and captures finer distinctions, at more cost. The important part is that
+  the count never changes with input length.
+- *Is this just a search index?* No. A search index stores words. This stores a
+  position, which is why two passages can be close together with no words in
+  common.
 
 ### Cosine similarity results
 
@@ -117,21 +129,21 @@ the README has to name the dataset it came from.
 
 ### Why splitting matters
 
-_(REWRITE IN MY OWN WORDS. The brief asks me to note this myself, and the
-self-check asks me to explain out loud why chunk size affects retrieved context
-quality. The two arguments, with the evidence I produced for each:_
+> **DRAFT — rewrite in my own voice before submitting.**
 
-_Argument 1 — fixed-size embeddings. Monday's Part 2 showed 7 characters and 196
-characters both produce 384 numbers. A 15,000-character document gets the same
-384. Everything it covers is averaged into one position, so a document about
-five topics sits in the bland middle of all five and matches none sharply._
+There are two reasons, and they push the same way.
 
-_Argument 2 — relevance precision. Retrieval should hand the model the passage
-that answers the question, not the file containing it. Part 5 below is the
-evidence: the 1500-character chunk swept in an entire unrelated markdown table
-alongside the relevant sentence._
+First, an embedding is always the same size. Monday's run showed 7 characters and
+196 characters both coming back as 384 numbers — and a 15,000-character document
+gets the same 384. Everything the document discusses is averaged into one
+position, so a file covering five topics sits in the bland middle of all five and
+matches none of them sharply.
 
-_Do not submit the bracketed text — it is scaffolding.)_
+Second, retrieval should hand the model the passage that answers the question, not
+the file that contains it. Everything else in that file is noise: it costs money,
+fills the context window, and pulls the model's attention away from the part that
+actually matters. Part 5 below is the evidence — the 1500-character chunk dragged
+in an entire unrelated table alongside the one relevant sentence.
 
 ### The boundary problem — the result worth showing
 
@@ -268,11 +280,22 @@ chunks at 500/100), not my own notes.
 
 ### What "semantic search" means, in plain language
 
-_(3–4 sentences, MINE TO WRITE. On the mentor's self-check list, and the opening
-line of the demo video. Plain language = readable aloud to someone who has never
-heard the word "embedding". Evidence I can draw on: Monday's 0.617 vs 0.031 with
-no shared keywords; Part 4's keyword-versus-semantic disagreement; Part 3's
-what-happens-when-nothing-matches. Do not submit anything from this bracket.)_
+> **DRAFT — rewrite in my own voice before submitting.** This is also the opening
+> line of the demo video, so it needs to sound like me talking, not like a
+> definition being read out.
+
+Semantic search looks for text that *means* the same thing as your question,
+rather than text that happens to use the same words. My own measurements showed
+it: two sentences about weekend baking scored 0.618 against each other despite
+sharing no useful words, while sentences on unrelated topics scored about 0.03. So
+when I ask my notes a question, the tool is not scanning for keywords — it is
+comparing meaning and ranking passages by how close they come. That is why it can
+find the right paragraph even when I phrase the question completely differently
+from how I originally wrote the note.
+
+**The honest caveat**, worth saying if asked: it has no idea whether being related
+actually answers the question. Asking about "Sundays" pulled up a chunk containing
+"Sun Oct 4" — genuinely related in meaning, completely useless as an answer.
 
 ### The store, measured
 

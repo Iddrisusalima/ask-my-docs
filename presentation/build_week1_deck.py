@@ -356,6 +356,52 @@ class Deck:
 
         self._notes(slide, notes)
 
+    def prose_slide(
+        self,
+        title: str,
+        sentences: list[str],
+        notes: str,
+        kicker: str | None = None,
+        footer: str | None = None,
+        banner: str | None = None,
+    ) -> None:
+        """Plain sentences rather than bullets, for text that has to read as prose.
+
+        `banner` draws an amber strip above the text - used to mark the slide as a
+        draft, so there is no chance of it being mistaken for finished work.
+        """
+        slide = self._new()
+        self._heading(slide, title, kicker)
+
+        top = BODY_TOP
+
+        if banner:
+            _rectangle(slide, MARGIN, top, CONTENT_WIDTH, Inches(0.42), ROW_FLAG)
+            _rectangle(slide, MARGIN, top, Pt(5), Inches(0.42), AMBER)
+
+            frame = self._textbox(slide, MARGIN + Inches(0.22), top + Inches(0.04), CONTENT_WIDTH - Inches(0.4), Inches(0.34))
+            paragraph = frame.paragraphs[0]
+            paragraph.text = banner
+            paragraph.font.size = Pt(14)
+            paragraph.font.bold = True
+            paragraph.font.color.rgb = AMBER
+            paragraph.font.name = BODY_FONT
+            top = top + Inches(0.72)
+
+        frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, BODY_BOTTOM - top)
+        for position, sentence in enumerate(sentences):
+            paragraph = frame.paragraphs[0] if position == 0 else frame.add_paragraph()
+            paragraph.text = sentence
+            paragraph.font.size = Pt(20)
+            paragraph.font.color.rgb = INK
+            paragraph.font.name = BODY_FONT
+            paragraph.space_after = Pt(16)
+
+        if footer:
+            self._footnote(slide, footer)
+
+        self._notes(slide, notes)
+
     def statement_slide(
         self,
         title: str,
@@ -481,7 +527,7 @@ What I would not cut is citations, the no-answer handling, or the demo video.
         ],
         highlight_rows={2},
         column_widths=[3.4, 0.8],
-        kicker="Mon–Tue",
+        kicker="Embeddings",
         caption="I chose a free local model (all-MiniLM-L6-v2) so re-running experiments costs nothing.",
         footer="The highlighted pair shares no useful words at all — a keyword search would score it near zero",
         notes="""
@@ -504,32 +550,42 @@ short sentence and a long paragraph that mean the same thing still match.
     )
 
     # 5 -------------------------------------------------------------------
-    deck.bullets_slide(
-        "What an embedding is — in my own words",
+    deck.prose_slide(
+        "What an embedding is",
         [
-            (0, "**[ I fill this in before presenting ]"),
-            (0, ""),
-            (0, "Your self-check: explain it without using \"vector\" as a cop-out"),
-            (0, "**What I have to work with:"),
-            (1, "7 characters in and 196 characters in both give exactly 384 numbers out"),
-            (1, "Two sentences with no shared words scored 0.618"),
-            (1, "The numbers mean nothing alone — only their positions relative to each other"),
+            "An embedding is what you get when a model reads text and turns it into a position "
+            "on a map of meaning.",
+            "Text that means similar things lands in nearby positions, even when the actual "
+            "words are completely different.",
+            "The model worked out the layout of that map during training, so nobody chose what "
+            "each number stands for — and one number on its own tells you nothing.",
+            "What carries the information is how close two pieces of text end up to each other.",
         ],
-        kicker="Mon–Tue",
-        footer="Left blank on purpose — this one has to be mine, or it falls apart when you ask a follow-up",
+        kicker="Embeddings",
+        banner="DRAFT — rewrite this in my own voice before presenting, then delete this strip",
+        footer="Evidence: 7 characters and 196 characters both produce exactly 384 numbers; two sentences with no shared words scored 0.618",
         notes="""
-WRITE THIS YOURSELF BEFORE THE MEETING. Three or four sentences, in your voice,
-replacing the placeholder line.
+THIS IS A DRAFT, NOT YOUR ANSWER. Read it, then say the same idea your way and
+replace the text. Ten minutes with it will do.
 
-The bullets are your raw material, not the answer.
+Why it must be yours: your mentor's self-check asks you to explain an embedding
+without falling back on the word "vector", and he will ask a follow-up. The usual
+ones are "so what makes two things land near each other?" and "why 384 numbers?"
+Wording you did not write is exactly where those questions land badly.
 
-A shape to react to and then discard: an embedding model reads text and hands
-back coordinates on a map of meaning, where things that mean similar things sit
-close together. Say it your own way. He will ask a follow-up question, and that
-is exactly where borrowed wording collapses.
+Answers worth having ready:
+- What makes them land near each other? The model was trained on huge amounts of
+  text and learned which words and phrases turn up in similar situations. Nobody
+  programmed the positions.
+- Why 384? That is just the size this particular model outputs. A bigger model
+  uses more numbers and captures finer distinctions, at more cost. What matters is
+  that the count never changes with the length of the input.
+- Is it like a search index? No. A search index stores words. This stores a
+  position, so two passages can be close together with no words in common.
 
-If you genuinely run out of time, present the slide as unfinished and say so.
-That is far better than reciting a sentence you cannot defend.
+If you have not rewritten it by the morning, say so honestly - "this is my
+current phrasing, I'm still tightening it" - and then demo the script. Showing
+the 0.618 score live proves the understanding better than a polished sentence.
         """,
     )
 
@@ -544,7 +600,7 @@ That is far better than reciting a sentence you cannot defend.
         ],
         highlight_rows={0},
         column_widths=[2.4, 1.6],
-        kicker="Wed–Thu",
+        kicker="Chunking",
         caption="I hid one sentence so that a 500-character cut would land in the middle of it.",
         footer="Overlap means each chunk repeats the last 100 characters of the one before it",
         notes="""
@@ -576,7 +632,7 @@ Row 3 fixes it deliberately. Overlap does not depend on the text cooperating.
         ],
         highlight_rows={1},
         column_widths=[1.2, 0.8, 2.6],
-        kicker="Wed–Thu",
+        kicker="Chunking",
         caption="Same document, cut three ways. Small chunks are precise; big chunks drag in clutter.",
         footer="My choice for now: 500 characters with 100 overlap — provisional until Week 2 tests it",
         notes="""
@@ -610,7 +666,7 @@ because a quarter of what I save is a second copy. Irrelevant at this size.
             "It trades a small chance of missing a match for speed that holds up as notes grow.",
             "I assumed a real database meant better. It means faster, and slightly less reliable.",
         ],
-        kicker="Fri",
+        kicker="Search",
         colour=TEAL,
         notes="""
 This is your answer to "do I understand how a vector database finds similar
@@ -638,7 +694,7 @@ That is a better reason to adopt it than speed, and it is the honest one.
         ],
         highlight_rows={2},
         column_widths=[3.2, 1.0],
-        kicker="Fri",
+        kicker="Edge case",
         caption="The search still returned five chunks. It always returns something.",
         footer="So cutting off low scores is necessary but not enough — Week 3's prompt must also allow \"I don't know\"",
         notes="""
