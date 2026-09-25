@@ -20,9 +20,13 @@ Slide 5 is intentionally left blank. "What an embedding is" has to be in the
 presenter's own words - it is on the mentor's self-check list, and borrowed
 phrasing will not survive a follow-up question.
 
-Design rules for this deck, learned the hard way:
+Design rules for this deck, learned by looking at rendered output rather than
+guessing:
   - one idea per slide, five bullets maximum
-  - short lines; if a bullet wraps onto three lines it is a paragraph
+  - content blocks are vertically centred in the body area; a table stranded at
+    the top of a 16:9 slide leaves an awkward void underneath
+  - table borders are stripped and replaced with row banding, because gridlines
+    add visual noise without adding information
   - the speaker notes carry the detail, not the slide
 """
 
@@ -33,43 +37,104 @@ from pathlib import Path
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.oxml import parse_xml
+from pptx.oxml.ns import nsdecls, qn
 from pptx.util import Emu, Inches, Pt
 
 # ---------------------------------------------------------------------------
-# Look and feel
+# Canvas
 # ---------------------------------------------------------------------------
 
 SLIDE_WIDTH = Inches(13.333)
 SLIDE_HEIGHT = Inches(7.5)
 
-INK = RGBColor(0x1A, 0x1A, 0x1A)
-MUTED = RGBColor(0x66, 0x66, 0x66)
-ACCENT = RGBColor(0x1F, 0x4E, 0x79)
-GOOD = RGBColor(0x1E, 0x7B, 0x3C)
-ALERT = RGBColor(0xB3, 0x2D, 0x2D)
-RULE = RGBColor(0xD8, 0xD8, 0xD8)
-BAND = RGBColor(0xF2, 0xF5, 0xF8)
+MARGIN = Inches(0.9)
+CONTENT_WIDTH = SLIDE_WIDTH - (2 * MARGIN)
+
+# Vertical band the body content lives in, between the title rule and the footer.
+BODY_TOP = Inches(2.0)
+BODY_BOTTOM = Inches(6.35)
+BODY_HEIGHT = BODY_BOTTOM - BODY_TOP
+
+# ---------------------------------------------------------------------------
+# Palette
+# ---------------------------------------------------------------------------
+
+NAVY = RGBColor(0x0F, 0x2A, 0x44)       # headings, table headers, title slide
+NAVY_SOFT = RGBColor(0x1C, 0x4E, 0x7A)  # kickers, accents
+TEAL = RGBColor(0x2E, 0x8B, 0x84)       # positive emphasis
+AMBER = RGBColor(0xB5, 0x6E, 0x0C)      # highlighted table rows
+ALERT = RGBColor(0xB3, 0x26, 0x1E)      # failures, outstanding work
+INK = RGBColor(0x1B, 0x1B, 0x1B)        # body text
+MUTED = RGBColor(0x6B, 0x72, 0x80)      # captions, footers
+RULE = RGBColor(0xDD, 0xE3, 0xE8)       # hairlines
+ROW_ALT = RGBColor(0xF7, 0xF9, 0xFB)    # table banding
+ROW_FLAG = RGBColor(0xFD, 0xF4, 0xE6)   # highlighted row fill
+WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 
 BODY_FONT = "Segoe UI"
 MONO_FONT = "Consolas"
 
-MARGIN = Inches(0.85)
-CONTENT_WIDTH = SLIDE_WIDTH - (2 * MARGIN)
+DECK_LABEL = "Ask My Docs  ·  Week 1"
+
+
+# ---------------------------------------------------------------------------
+# Low-level helpers
+# ---------------------------------------------------------------------------
+
+
+def _strip_cell_borders(cell) -> None:
+    """Remove a table cell's gridlines.
+
+    python-pptx applies a bordered default table style, which on a slide full of
+    numbers reads as clutter. Row banding carries the structure instead, so the
+    lines are explicitly set to no-fill.
+
+    The four line elements must appear first inside `tcPr` and in the order
+    left, right, top, bottom, so they are inserted in reverse at position zero.
+    """
+    tc_pr = cell._tc.get_or_add_tcPr()
+
+    for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
+        for existing in tc_pr.findall(qn(tag)):
+            tc_pr.remove(existing)
+
+    for tag in reversed(("a:lnL", "a:lnR", "a:lnT", "a:lnB")):
+        tc_pr.insert(
+            0,
+            parse_xml(f'<{tag} {nsdecls("a")} w="0" cap="flat" cmpd="sng" algn="ctr"><a:noFill/></{tag}>'),
+        )
+
+
+def _rectangle(slide, left, top, width, height, colour) -> None:
+    """A flat filled rectangle with no outline or shadow."""
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = colour
+    shape.line.fill.background()
+    shape.shadow.inherit = False
 
 
 class Deck:
-    """Thin wrapper over python-pptx for the four layouts this deck needs."""
+    """Builds the deck. Four slide layouts, one consistent frame around them."""
 
     def __init__(self) -> None:
         self.presentation = Presentation()
         self.presentation.slide_width = SLIDE_WIDTH
         self.presentation.slide_height = SLIDE_HEIGHT
         self._blank = self.presentation.slide_layouts[6]
+        self._number = 0
 
-    # -- building blocks ---------------------------------------------------
+    # -- frame -------------------------------------------------------------
 
-    def _new(self):
-        return self.presentation.slides.add_slide(self._blank)
+    def _new(self, numbered: bool = True):
+        slide = self.presentation.slides.add_slide(self._blank)
+        if numbered:
+            self._number += 1
+            self._page_furniture(slide)
+        return slide
 
     def _textbox(self, slide, left, top, width, height):
         box = slide.shapes.add_textbox(left, top, width, height)
@@ -77,71 +142,91 @@ class Deck:
         frame.word_wrap = True
         return frame
 
-    def _heading(self, slide, title: str, kicker: str | None = None) -> Emu:
-        top = Inches(0.5)
+    def _page_furniture(self, slide) -> None:
+        """The thin accent stripe down the left edge, plus the page number."""
+        _rectangle(slide, Emu(0), Emu(0), Inches(0.17), SLIDE_HEIGHT, NAVY)
+
+        frame = self._textbox(slide, SLIDE_WIDTH - Inches(3.4), Inches(6.85), Inches(2.5), Inches(0.35))
+        paragraph = frame.paragraphs[0]
+        paragraph.alignment = PP_ALIGN.RIGHT
+        paragraph.text = f"{DECK_LABEL}   ·   {self._number}"
+        paragraph.font.size = Pt(10)
+        paragraph.font.color.rgb = MUTED
+        paragraph.font.name = BODY_FONT
+
+    def _heading(self, slide, title: str, kicker: str | None = None) -> None:
+        top = Inches(0.62)
 
         if kicker:
-            frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, Inches(0.3))
-            run = frame.paragraphs[0]
-            run.text = kicker.upper()
-            run.font.size = Pt(12)
-            run.font.bold = True
-            run.font.color.rgb = ACCENT
-            run.font.name = BODY_FONT
-            top = top + Inches(0.36)
+            # Small filled chip, which reads as a label rather than stray text.
+            chip_width = Inches(0.11 * len(kicker) + 0.42)
+            _rectangle(slide, MARGIN, top, chip_width, Inches(0.28), NAVY_SOFT)
 
-        frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, Inches(0.8))
-        run = frame.paragraphs[0]
-        run.text = title
-        run.font.size = Pt(30)
-        run.font.bold = True
-        run.font.color.rgb = INK
-        run.font.name = BODY_FONT
+            frame = self._textbox(slide, MARGIN, top - Inches(0.02), chip_width, Inches(0.32))
+            frame.margin_left = frame.margin_right = 0
+            paragraph = frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.CENTER
+            paragraph.text = kicker.upper()
+            paragraph.font.size = Pt(11)
+            paragraph.font.bold = True
+            paragraph.font.color.rgb = WHITE
+            paragraph.font.name = BODY_FONT
+            top = top + Inches(0.45)
 
-        line_top = top + Inches(0.78)
-        line = slide.shapes.add_shape(1, MARGIN, line_top, CONTENT_WIDTH, Pt(1.5))
-        line.fill.solid()
-        line.fill.fore_color.rgb = RULE
-        line.line.fill.background()
-        line.shadow.inherit = False
+        frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, Inches(0.72))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = title
+        paragraph.font.size = Pt(31)
+        paragraph.font.bold = True
+        paragraph.font.color.rgb = NAVY
+        paragraph.font.name = BODY_FONT
 
-        return line_top + Inches(0.34)
+        # Short accent rule, not a full-width line - lighter on the eye.
+        rule_top = top + Inches(0.76)
+        _rectangle(slide, MARGIN, rule_top, Inches(1.5), Pt(3), NAVY_SOFT)
+        _rectangle(slide, MARGIN + Inches(1.5), rule_top + Pt(1), CONTENT_WIDTH - Inches(1.5), Pt(1), RULE)
+
+    def _footnote(self, slide, text: str) -> None:
+        frame = self._textbox(slide, MARGIN, Inches(6.55), CONTENT_WIDTH - Inches(2.6), Inches(0.6))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = text
+        paragraph.font.size = Pt(12)
+        paragraph.font.italic = True
+        paragraph.font.color.rgb = MUTED
+        paragraph.font.name = BODY_FONT
 
     def _notes(self, slide, notes: str) -> None:
         slide.notes_slide.notes_text_frame.text = notes.strip()
 
-    def _footer(self, slide, text: str) -> None:
-        frame = self._textbox(slide, MARGIN, Inches(6.6), CONTENT_WIDTH, Inches(0.5))
-        run = frame.paragraphs[0]
-        run.text = text
-        run.font.size = Pt(12)
-        run.font.italic = True
-        run.font.color.rgb = MUTED
-        run.font.name = BODY_FONT
-
-    # -- slide types -------------------------------------------------------
+    # -- layouts -----------------------------------------------------------
 
     def title_slide(self, title: str, subtitle: str, meta: str, notes: str) -> None:
-        slide = self._new()
+        slide = self._new(numbered=False)
 
-        band = slide.shapes.add_shape(1, Emu(0), Inches(2.25), SLIDE_WIDTH, Inches(2.1))
-        band.fill.solid()
-        band.fill.fore_color.rgb = BAND
-        band.line.fill.background()
-        band.shadow.inherit = False
+        _rectangle(slide, Emu(0), Emu(0), SLIDE_WIDTH, SLIDE_HEIGHT, NAVY)
+        _rectangle(slide, MARGIN, Inches(2.55), Inches(1.9), Pt(5), TEAL)
 
-        for top, text, size, bold, colour in (
-            (Inches(2.5), title, 46, True, INK),
-            (Inches(3.45), subtitle, 20, False, ACCENT),
-            (Inches(4.75), meta, 14, False, MUTED),
-        ):
-            frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, Inches(0.9))
-            run = frame.paragraphs[0]
-            run.text = text
-            run.font.size = Pt(size)
-            run.font.bold = bold
-            run.font.color.rgb = colour
-            run.font.name = BODY_FONT
+        frame = self._textbox(slide, MARGIN, Inches(2.85), CONTENT_WIDTH, Inches(1.1))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = title
+        paragraph.font.size = Pt(54)
+        paragraph.font.bold = True
+        paragraph.font.color.rgb = WHITE
+        paragraph.font.name = BODY_FONT
+
+        frame = self._textbox(slide, MARGIN, Inches(3.95), CONTENT_WIDTH, Inches(0.6))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = subtitle
+        paragraph.font.size = Pt(21)
+        paragraph.font.color.rgb = RGBColor(0xAE, 0xC6, 0xD8)
+        paragraph.font.name = BODY_FONT
+
+        frame = self._textbox(slide, MARGIN, Inches(5.5), CONTENT_WIDTH, Inches(0.8))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = meta
+        paragraph.font.size = Pt(13)
+        paragraph.font.color.rgb = RGBColor(0x7C, 0x97, 0xAB)
+        paragraph.font.name = BODY_FONT
 
         self._notes(slide, notes)
 
@@ -155,9 +240,10 @@ class Deck:
     ) -> None:
         """Bullets as (indent_level, text). Prefix with '**' for a bold lead-in."""
         slide = self._new()
-        top = self._heading(slide, title, kicker)
+        self._heading(slide, title, kicker)
 
-        frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, Inches(4.3))
+        frame = self._textbox(slide, MARGIN, BODY_TOP, CONTENT_WIDTH, BODY_HEIGHT)
+        frame.vertical_anchor = MSO_ANCHOR.TOP
 
         for position, (level, text) in enumerate(bullets):
             paragraph = frame.paragraphs[0] if position == 0 else frame.add_paragraph()
@@ -168,19 +254,19 @@ class Deck:
 
             if not clean.strip():
                 paragraph.text = ""
-                paragraph.font.size = Pt(8)
+                paragraph.font.size = Pt(9)
                 continue
 
-            marker = "" if level == 0 and bold else ("•  " if level == 0 else "–  ")
+            marker = "" if level == 0 and bold else ("•   " if level == 0 else "–   ")
             paragraph.text = f"{marker}{clean}"
             paragraph.font.size = Pt(20 if level == 0 else 17)
             paragraph.font.bold = bold
-            paragraph.font.color.rgb = INK if level == 0 else MUTED
+            paragraph.font.color.rgb = NAVY if bold else (INK if level == 0 else MUTED)
             paragraph.font.name = BODY_FONT
-            paragraph.space_after = Pt(14)
+            paragraph.space_after = Pt(15)
 
         if footer:
-            self._footer(slide, footer)
+            self._footnote(slide, footer)
 
         self._notes(slide, notes)
 
@@ -197,22 +283,34 @@ class Deck:
         caption: str | None = None,
     ) -> None:
         slide = self._new()
-        top = self._heading(slide, title, kicker)
+        self._heading(slide, title, kicker)
         highlight_rows = highlight_rows or set()
+
+        header_height = Inches(0.52)
+        row_height = Inches(0.52)
+        table_height = header_height + (row_height * len(rows))
+        caption_height = Inches(0.58) if caption else Emu(0)
+
+        # Centre the caption and table together as one block. Centring the table
+        # alone strands the caption a long way above it, so the two stop reading
+        # as related.
+        block_height = caption_height + table_height
+        top = BODY_TOP + Emu(int(max(0, BODY_HEIGHT - block_height) / 2))
 
         if caption:
             frame = self._textbox(slide, MARGIN, top, CONTENT_WIDTH, Inches(0.4))
-            run = frame.paragraphs[0]
-            run.text = caption
-            run.font.size = Pt(16)
-            run.font.color.rgb = MUTED
-            run.font.name = BODY_FONT
-            top = top + Inches(0.55)
+            paragraph = frame.paragraphs[0]
+            paragraph.text = caption
+            paragraph.font.size = Pt(16)
+            paragraph.font.color.rgb = MUTED
+            paragraph.font.name = BODY_FONT
+            top = top + caption_height
 
-        row_count = len(rows) + 1
-        height = Inches(0.46) * row_count
-        shape = slide.shapes.add_table(row_count, len(headers), MARGIN, top, CONTENT_WIDTH, height)
+        shape = slide.shapes.add_table(len(rows) + 1, len(headers), MARGIN, top, CONTENT_WIDTH, table_height)
         table = shape.table
+        table.rows[0].height = header_height
+        for index in range(1, len(rows) + 1):
+            table.rows[index].height = row_height
 
         if column_widths:
             total = sum(column_widths)
@@ -222,29 +320,39 @@ class Deck:
         for column, label in enumerate(headers):
             cell = table.cell(0, column)
             cell.text = label
+            cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+            cell.margin_left = cell.margin_right = Inches(0.16)
             paragraph = cell.text_frame.paragraphs[0]
-            paragraph.font.size = Pt(15)
+            paragraph.font.size = Pt(14)
             paragraph.font.bold = True
-            paragraph.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+            paragraph.font.color.rgb = WHITE
             paragraph.font.name = BODY_FONT
             cell.fill.solid()
-            cell.fill.fore_color.rgb = ACCENT
+            cell.fill.fore_color.rgb = NAVY
+            _strip_cell_borders(cell)
 
         for row_index, row in enumerate(rows, start=1):
-            emphasise = (row_index - 1) in highlight_rows
+            flagged = (row_index - 1) in highlight_rows
+            banded = row_index % 2 == 0
+
             for column, value in enumerate(row):
                 cell = table.cell(row_index, column)
                 cell.text = value
+                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+                cell.margin_left = cell.margin_right = Inches(0.16)
+
                 paragraph = cell.text_frame.paragraphs[0]
                 paragraph.font.size = Pt(15)
-                paragraph.font.bold = emphasise
+                paragraph.font.bold = flagged
                 paragraph.font.name = MONO_FONT if column > 0 else BODY_FONT
-                paragraph.font.color.rgb = ALERT if emphasise else INK
+                paragraph.font.color.rgb = AMBER if flagged else INK
+
                 cell.fill.solid()
-                cell.fill.fore_color.rgb = BAND if emphasise else RGBColor(0xFF, 0xFF, 0xFF)
+                cell.fill.fore_color.rgb = ROW_FLAG if flagged else (ROW_ALT if banded else WHITE)
+                _strip_cell_borders(cell)
 
         if footer:
-            self._footer(slide, footer)
+            self._footnote(slide, footer)
 
         self._notes(slide, notes)
 
@@ -258,24 +366,30 @@ class Deck:
         colour: RGBColor | None = None,
     ) -> None:
         slide = self._new()
-        top = self._heading(slide, title, kicker)
+        self._heading(slide, title, kicker)
 
-        frame = self._textbox(slide, MARGIN, top + Inches(0.2), CONTENT_WIDTH, Inches(0.9))
-        run = frame.paragraphs[0]
-        run.text = headline
-        run.font.size = Pt(36)
-        run.font.bold = True
-        run.font.color.rgb = colour or ALERT
-        run.font.name = BODY_FONT
+        accent = colour or TEAL
 
-        frame = self._textbox(slide, MARGIN, top + Inches(1.4), CONTENT_WIDTH, Inches(3.3))
+        # Tinted panel behind the headline so the claim carries visual weight.
+        _rectangle(slide, MARGIN, BODY_TOP, CONTENT_WIDTH, Inches(1.05), ROW_ALT)
+        _rectangle(slide, MARGIN, BODY_TOP, Pt(5), Inches(1.05), accent)
+
+        frame = self._textbox(slide, MARGIN + Inches(0.28), BODY_TOP + Inches(0.16), CONTENT_WIDTH - Inches(0.5), Inches(0.8))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = headline
+        paragraph.font.size = Pt(32)
+        paragraph.font.bold = True
+        paragraph.font.color.rgb = accent
+        paragraph.font.name = BODY_FONT
+
+        frame = self._textbox(slide, MARGIN, BODY_TOP + Inches(1.4), CONTENT_WIDTH, Inches(2.8))
         for position, line in enumerate(support):
             paragraph = frame.paragraphs[0] if position == 0 else frame.add_paragraph()
             paragraph.text = line
-            paragraph.font.size = Pt(19)
+            paragraph.font.size = Pt(18)
             paragraph.font.color.rgb = INK
             paragraph.font.name = BODY_FONT
-            paragraph.space_after = Pt(15)
+            paragraph.space_after = Pt(14)
 
         self._notes(slide, notes)
 
@@ -296,7 +410,7 @@ def build() -> Deck:
     deck.title_slide(
         "Ask My Docs",
         "Week 1 review — embeddings and chunking",
-        "Mon 21 – Sun 27 Sep 2026   ·   A question-answering tool over my own notes, built without a framework",
+        "Mon 21 – Sun 27 Sep 2026     ·     A question-answering tool over my own notes, built without a framework",
         notes="""
 Opening line, roughly:
 
@@ -318,12 +432,12 @@ credible.
         [
             (0, "**Goal: ask questions about my own notes, answered only from those notes"),
             (0, "Five stages, each written by hand:"),
-            (1, "chunk  →  embed  →  store  →  retrieve  →  generate"),
+            (1, "chunk   →   embed   →   store   →   retrieve   →   generate"),
             (0, "**Week 1 delivered the first two, plus a working search"),
             (0, "No LangChain or LlamaIndex — your brief asks for it built manually"),
         ],
         kicker="Overview",
-        footer="Repo: ask-my-docs · 4 commits · Python, a free local embedding model, no API key needed yet",
+        footer="Repo: ask-my-docs  ·  4 commits  ·  Python, a free local embedding model, no API key needed yet",
         notes="""
 Keep this to about 30 seconds. It is orientation, not content.
 
@@ -393,10 +507,10 @@ short sentence and a long paragraph that mean the same thing still match.
     deck.bullets_slide(
         "What an embedding is — in my own words",
         [
-            (0, "[ I fill this in before presenting ]"),
+            (0, "**[ I fill this in before presenting ]"),
             (0, ""),
-            (0, "**Your self-check: explain it without using \"vector\" as a cop-out"),
-            (0, "What I have to work with:"),
+            (0, "Your self-check: explain it without using \"vector\" as a cop-out"),
+            (0, "**What I have to work with:"),
             (1, "7 characters in and 196 characters in both give exactly 384 numbers out"),
             (1, "Two sentences with no shared words scored 0.618"),
             (1, "The numbers mean nothing alone — only their positions relative to each other"),
@@ -497,7 +611,7 @@ because a quarter of what I save is a second copy. Irrelevant at this size.
             "I assumed a real database meant better. It means faster, and slightly less reliable.",
         ],
         kicker="Fri",
-        colour=GOOD,
+        colour=TEAL,
         notes="""
 This is your answer to "do I understand how a vector database finds similar
 chunks". Most people answer by naming the algorithm. Answering by explaining that
@@ -590,9 +704,8 @@ def main() -> int:
     deck = build()
     deck.save(output)
 
-    slide_count = len(deck.presentation.slides)
     print(f"Wrote {output}")
-    print(f"  {slide_count} slides, all with speaker notes")
+    print(f"  {len(deck.presentation.slides)} slides, all with speaker notes")
     print("\nSlide 5 is intentionally unfinished: 'What an embedding is'.")
     print("Write it in your own words before presenting.")
     return 0
