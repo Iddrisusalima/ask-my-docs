@@ -192,10 +192,14 @@ something from the user before they can start.
   - verified: 5 entries, 4,594 bytes; directory created on demand; previews truncated to 100 chars
   - empty results logged explicitly as `NO RESULTS`, since that is a finding rather than missing data
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
+- [x] 11.1a Drive the tuned settings from `.env` via `src/config.py`
+  - `CHUNK_SIZE`, `CHUNK_OVERLAP`, `TOP_K`, `MIN_SCORE` now read from one place; CLI flags still override
+  - previously hardcoded in three scripts, which would have made the documented values decorative
+  - _Requirements: 10.3_
 - [ ] 11.2 User writes a comparison of Chroma against one alternative
-  - supply the factual contrasts; the argument must be theirs
+  - factual contrasts supplied in `notes/week2-learning-log.md`; the argument must be theirs
   - _Requirements: 11.3, 11.4_
-- [ ] 11.3 Commit Week 2 work
+- [x] 11.3 Commit Week 2 work
 - [ ] 11.4 Confirm the real deadline with the mentor if still unresolved, and cut scope now if it holds at Oct 4
 
 ---
