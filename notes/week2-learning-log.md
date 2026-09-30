@@ -4,8 +4,13 @@ Week 2 runs **Mon 28 Sep – Sun 4 Oct 2026** (shifted +1 week from the brief; s
 `week1-learning-log.md` for why).
 
 Same dataset caveat as Week 1: `sample-notes/` is still empty, so everything below
-was measured against this project's own `.kiro/` docs — 7 files, 57,597 characters,
-**159 chunks** at 500/100. Re-run after adding my own notes.
+was measured against this project's own `.kiro/` docs. Re-run after adding my own
+notes.
+
+The Mon–Tue figures were taken at **159 chunks**; the Wed–Fri figures at **171
+chunks**, because I kept editing the spec files that make up the interim corpus.
+The conclusions did not change, but the fact that the numbers drifted while the
+code stayed identical is itself the argument for getting a fixed dataset in place.
 
 ---
 
@@ -200,18 +205,153 @@ scaling difference is real but not observable at 159 chunks.
 
 ## Wed–Thu — Implement retrieval
 
-_(not started)_
+Code: `src/retriever.py`, `scripts/05_retrieve.py`
+
+```powershell
+.\venv\Scripts\python.exe scripts\05_retrieve.py
+```
+
+The retriever does three things, and each one is a place the pipeline could go
+quietly wrong:
+
+1. Checks the collection was built by the model now doing the querying.
+2. Converts Chroma's *distance* into *similarity* — once, here — so every score
+   anything downstream sees means "higher is better", matching Week 1.
+3. Offers an optional `min_score` floor, so "nothing relevant" can be expressed
+   at all.
 
 ### Top-k comparison (3 / 5 / 10)
 
-| top-k | observation |
-| ----- | ----------- |
+Averaged over four test questions, phrased to avoid the vocabulary of their own
+answers:
+
+| top-k | mean score | worst | drop vs k=3 | context chars | sources | duplicate pairs |
+| ----- | ---------- | ----- | ----------- | ------------- | ------- | --------------- |
+| 3 | 0.4296 | 0.3947 | — | 1,380 | 2.5 | 0.0 |
+| **5** | **0.4034** | **0.3545** | **−0.0262** | **2,211** | **3.2** | **0.5** |
+| 10 | 0.3681 | 0.3132 | −0.0615 | 4,636 | 3.8 | 2.8 |
+
+"Duplicate pairs" counts results that are *neighbouring chunks of the same
+document*. Because consecutive chunks share 100 characters by construction, when
+both come back for one question part of the context is sent to the model twice.
+At k=10 that happened 3 times per question on average — three of ten slots spent
+on text already present.
+
+### What the tail actually contains
+
+For "Why does overlap between chunks matter?" at k=10:
+
+| | |
+| --- | --- |
+| mean of top 3 | 0.6003 |
+| mean of ranks 6–10 | 0.4571 |
+| quality drop | **0.1432** |
+
+Ranks 6 to 9 scored 0.4640, 0.4636, 0.4633 and 0.4578 — essentially identical.
+When scores bunch that tightly the ranking between them is close to arbitrary,
+which is a useful signal in itself: it means the question found nothing in
+particular beyond rank 5.
+
+The tail chunks are not rubbish. They are *loosely on topic*, and that is exactly
+what makes them harmful. Obvious junk would be ignored; plausible-but-irrelevant
+text is what pulls a model's attention away from the passage that actually
+answers the question.
+
+### The relevance floor — and a measurement that killed the idea of a global one
+
+How many chunks survive each floor, swept across all four questions plus an
+unanswerable control:
+
+| floor | Q1 | Q2 | Q3 | Q4 | unanswerable |
+| ----- | -- | -- | -- | -- | ------------ |
+| off | 5 | 5 | 5 | 5 | 5 |
+| 0.25 | 5 | 5 | 5 | 5 | 4 |
+| 0.30 | 5 | 3 | 5 | 5 | 2 |
+| **0.35** | 5 | **2** | **2** | 4 | **0** |
+| 0.40 | 5 | **0** | **0** | **1** | 0 |
+| 0.45 | 5 | 0 | 0 | 0 | 0 |
+
+- Q1: Why does overlap between chunks matter?
+- Q2: How should I decide how many results to fetch?
+- Q3: What stops the model inventing an answer?
+- Q4: What happens when my notes do not cover the question?
+
+**The floor that silences the unanswerable control also guts Q2 and Q3.** At 0.35
+the control is finally blocked, but Q2 and Q3 drop to two chunks each. At 0.40
+they return nothing at all — for questions the notes genuinely do cover.
+
+I nearly drew the wrong conclusion here. My first version of this test used only
+Q1, which scores high throughout, and the floor looked perfectly safe at 0.35.
+Sweeping all four questions is what exposed the conflict. A measurement designed
+around the best case is worse than no measurement, because it produces false
+confidence.
+
+**Why this happens:** these scores are not calibrated across questions. A question
+worded the way my notes are written scores high on everything; one phrased
+differently scores low on everything, even when its top hit is exactly right. So
+an absolute cutoff compares numbers that were never on a common scale — the same
+mistake Week 1 Monday warned about, resurfacing in a new place.
+
+**Decision: `min_score` defaults to off.** A wrong floor silently discards correct
+answers, which is worse than passing marginal context to a model that has been
+told it may refuse. Week 3 leans on the prompt as the primary defence.
+
+Worth trying if time allows: a *relative* test instead — require the best hit to
+stand clear of the rest by some margin. For the unanswerable control the spread
+was flat; for Q1 the top hit stood 0.06 above second place. That shape looks more
+promising than an absolute threshold, and it would not depend on question wording.
+
+### Chosen: TOP_K = 5
+
+Reasoning from the table, so the choice is defensible:
+
+- **Against k=3:** k=3 has the best mean score but pulls from only 2.5 sources on
+  average and 1,380 characters. Too easy for a real answer to need a detail that
+  fell just outside three chunks.
+- **Against k=10:** costs 3.4x the context for a 0.0615 drop in mean quality, and
+  wastes nearly three of ten slots on duplicated neighbouring chunks. The ranks
+  6–10 scores were bunched within 0.007 of each other, so they add noise rather
+  than information.
+- **k=5** sits at 2,211 characters — a comfortable prompt size for Week 3 — with
+  3.2 sources and only 0.5 duplicate pairs.
+
+Still provisional. Answer quality in Week 3 is the only test that matters; every
+number above is a proxy for it.
 
 ---
 
 ## Fri — Wrap up Week 2
 
-_(not started)_
+### Retrieval logging
+
+Code: `src/retrieval_log.py`. Every question run through `05_retrieve.py` appends
+to `logs/retrieval.log` (gitignored — review material, not a deliverable).
+
+Verified: 5 entries, 45 lines, 4,594 bytes. Each entry records
+
+- timestamp and the question
+- the full configuration: model, top-k, min_score, collection, chunks indexed
+- summary line: best / worst / spread
+- every result with its score, citation id, and a 100-character preview
+
+Three format decisions worth keeping:
+
+**Append, never overwrite** — the value is in accumulating runs across days, so
+a settings change that collapses scores is visible by comparison.
+
+**Configuration recorded alongside results** — a score is meaningless without
+knowing the chunk size, top-k and model behind it. A log of bare numbers cannot
+be compared against anything.
+
+**Empty results logged loudly** as `NO RESULTS - nothing cleared the relevance
+floor`. An empty result set is a finding, not missing data. Confirmed by asking
+"what is the capital of Peru?" with a 0.5 floor:
+
+```
+[2026-09-28 15:25:33]  what is the capital of Peru?
+  config: chunks_indexed=159  min_score=0.5  top_k=5  model=local:...MiniLM-L6-v2
+  NO RESULTS - nothing cleared the relevance floor
+```
 
 ### Chroma versus one alternative
 

@@ -23,6 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src import config
 from src.console import enable_utf8_output
 from src.embedder import Embedder
 from src.retrieval_log import RetrievalLog
@@ -284,11 +285,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Retrieve chunks for questions and tune top-k.")
     parser.add_argument("--db", default="chroma_db")
     parser.add_argument("--collection", default="notes")
-    parser.add_argument("--top-k", type=int, default=5)
-    parser.add_argument("--min-score", type=float, default=None)
+    parser.add_argument("--top-k", type=int, default=None, help="Overrides TOP_K in .env")
+    parser.add_argument("--min-score", type=float, default=None, help="Overrides MIN_SCORE in .env")
     parser.add_argument("--question", action="append", help="Ask your own (repeatable)")
     parser.add_argument("--no-log", action="store_true", help="Skip writing to logs/retrieval.log")
     arguments = parser.parse_args()
+
+    arguments.top_k = config.top_k(arguments.top_k)
+    arguments.min_score = config.min_score(arguments.min_score)
 
     store = VectorStore(path=arguments.db, collection=arguments.collection)
 

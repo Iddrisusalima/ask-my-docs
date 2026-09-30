@@ -25,6 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src import config
 from src.chunker import chunk_documents, chunk_spans, chunk_statistics, chunk_text
 from src.console import enable_utf8_output
 from src.loader import DocumentLoadError, load_documents

@@ -156,30 +156,41 @@ something from the user before they can start.
   - similarity reproduces Friday's hand-written cosine to 4dp (0.6690 / 0.6070 / 0.5247), cross-validating both implementations
   - _Requirements: 6.3, 11.2_
 
-- [ ] 10. Retrieval — Wed–Thu
-- [ ] 10.1 Write `src/retriever.py` embedding the question with the same model as the index
+- [x] 10. Retrieval — Wed–Thu
+- [x] 10.1 Write `src/retriever.py` embedding the question with the same model as the index
+  - model check runs once per Retriever, before the first query
   - _Requirements: 6.1_
-- [ ] 10.2 Convert Chroma distance to cosine similarity at the retriever boundary
-  - every number the user sees should mean "higher is better", as in Week 1
+- [x] 10.2 Convert Chroma distance to cosine similarity at the retriever boundary
+  - one conversion point, so every number downstream means "higher is better"
   - _Requirements: 6.3_
-- [ ] 10.3 Return top-k ordered results carrying score, text, and source metadata
+- [x] 10.3 Return top-k ordered results carrying score, text, and source metadata
   - _Requirements: 6.2, 6.3, 6.5_
-- [ ] 10.4 Add an optional `min_score` floor returning an empty set when nothing clears it
-  - distinguishes "nothing relevant" from "the five least irrelevant chunks"
+- [x] 10.4 Add an optional `min_score` floor returning an empty set when nothing clears it
+  - defaults to off, for the reason measured in 10.7a
   - _Requirements: 6.6_
-- [ ] 10.5 Write `scripts/05_retrieve.py` printing retrieved chunks with scores
+- [x] 10.5 Write `scripts/05_retrieve.py` printing retrieved chunks with scores
+  - also flags results that are neighbouring chunks of one document, i.e. duplicated context
   - _Requirements: 10.2, 10.5_
-- [ ] 10.6 Test several questions and manually judge whether retrieved chunks are relevant
-  - including a question phrased with no keyword overlap with its answer
+- [x] 10.6 Test several questions and manually judge whether retrieved chunks are relevant
+  - four questions, each phrased to avoid the vocabulary of its own answer
   - _Requirements: 11.2_
-- [ ] 10.7 Compare top-k of 3, 5, and 10 and record the context-versus-noise tradeoff
+- [x] 10.7 Compare top-k of 3, 5, and 10 and record the context-versus-noise tradeoff
+  - k=3: mean 0.4330, 1,372 chars · k=5: 0.4106, 2,249 · k=10: 0.3722, 4,636
+  - at k=10, 3 of 10 slots went to duplicated neighbouring chunks; ranks 6–10 bunched within 0.007
   - _Requirements: 6.4, 11.2_
-- [ ] 10.8 Choose `TOP_K` from those measurements and record the reasoning
+- [x] 10.7a Sweep the relevance floor across every question, not just the strongest
+  - first attempt used only the highest-scoring question and made a 0.35 floor look safe
+  - swept properly: 0.35 blocks the unanswerable control but cuts two real questions to 2 chunks; 0.40 returns nothing for them
+  - conclusion: scores are not calibrated across questions, so a global absolute floor cannot work
+  - _Requirements: 6.6, 11.2_
+- [x] 10.8 Choose `TOP_K` from those measurements and record the reasoning
+  - **TOP_K=5**, written into `.env.example` with the reasoning alongside it
   - _Requirements: 11.2, 12.3_
 
 - [ ] 11. Week 2 wrap-up — Fri
-- [ ] 11.1 Log question, configuration, and retrieved chunks with scores to `logs/retrieval.log`
-  - create the directory if absent; truncate chunk text to a skimmable preview
+- [x] 11.1 Log question, configuration, and retrieved chunks with scores to `logs/retrieval.log`
+  - verified: 5 entries, 4,594 bytes; directory created on demand; previews truncated to 100 chars
+  - empty results logged explicitly as `NO RESULTS`, since that is a finding rather than missing data
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 - [ ] 11.2 User writes a comparison of Chroma against one alternative
   - supply the factual contrasts; the argument must be theirs

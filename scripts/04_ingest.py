@@ -27,6 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src import config
 from src.chunker import chunk_documents, chunk_statistics
 from src.console import enable_utf8_output
 from src.embedder import Embedder
@@ -66,12 +67,17 @@ def exact_search(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Load, chunk, embed and index a folder of notes.")
     parser.add_argument("--folder", default="sample-notes", help="Folder of documents to ingest")
-    parser.add_argument("--chunk-size", type=int, default=500)
-    parser.add_argument("--overlap", type=int, default=100)
+    parser.add_argument("--chunk-size", type=int, default=None, help="Overrides CHUNK_SIZE in .env")
+    parser.add_argument("--overlap", type=int, default=None, help="Overrides CHUNK_OVERLAP in .env")
     parser.add_argument("--db", default="chroma_db", help="Directory for the Chroma database")
     parser.add_argument("--collection", default="notes")
-    parser.add_argument("--top-k", type=int, default=5, help="Results for the smoke-test queries")
+    parser.add_argument("--top-k", type=int, default=None, help="Results for the smoke-test queries")
     arguments = parser.parse_args()
+
+    # .env holds the values chosen by measurement; flags override for experiments.
+    arguments.chunk_size = config.chunk_size(arguments.chunk_size)
+    arguments.overlap = config.chunk_overlap(arguments.overlap)
+    arguments.top_k = config.top_k(arguments.top_k)
 
     # ------------------------------------------------------------------
     rule("STEP 1  Load")
