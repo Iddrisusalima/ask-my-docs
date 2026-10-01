@@ -77,7 +77,7 @@ WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 BODY_FONT = "Segoe UI"
 MONO_FONT = "Consolas"
 
-DECK_LABEL = "Ask My Docs  ·  Week 1"
+DECK_LABEL = "Ask My Docs  ·  Weeks 1–2"
 
 
 # ---------------------------------------------------------------------------
@@ -356,6 +356,44 @@ class Deck:
 
         self._notes(slide, notes)
 
+    def section_slide(self, label: str, title: str, points: list[str], notes: str) -> None:
+        """A navy divider announcing a new week.
+
+        Two weeks of material in one deck needs an unmistakable boundary,
+        otherwise the audience loses track of which half they are being shown.
+        """
+        slide = self._new()
+
+        _rectangle(slide, Emu(0), Emu(0), SLIDE_WIDTH, SLIDE_HEIGHT, NAVY)
+        _rectangle(slide, MARGIN, Inches(2.45), Inches(1.9), Pt(5), TEAL)
+
+        frame = self._textbox(slide, MARGIN, Inches(1.95), CONTENT_WIDTH, Inches(0.4))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = label.upper()
+        paragraph.font.size = Pt(15)
+        paragraph.font.bold = True
+        paragraph.font.color.rgb = TEAL
+        paragraph.font.name = BODY_FONT
+
+        frame = self._textbox(slide, MARGIN, Inches(2.75), CONTENT_WIDTH, Inches(1.0))
+        paragraph = frame.paragraphs[0]
+        paragraph.text = title
+        paragraph.font.size = Pt(40)
+        paragraph.font.bold = True
+        paragraph.font.color.rgb = WHITE
+        paragraph.font.name = BODY_FONT
+
+        frame = self._textbox(slide, MARGIN, Inches(4.05), CONTENT_WIDTH, Inches(1.8))
+        for position, point in enumerate(points):
+            paragraph = frame.paragraphs[0] if position == 0 else frame.add_paragraph()
+            paragraph.text = f"•   {point}"
+            paragraph.font.size = Pt(18)
+            paragraph.font.color.rgb = RGBColor(0xAE, 0xC6, 0xD8)
+            paragraph.font.name = BODY_FONT
+            paragraph.space_after = Pt(11)
+
+        self._notes(slide, notes)
+
     def prose_slide(
         self,
         title: str,
@@ -455,8 +493,8 @@ def build() -> Deck:
     # 1 -------------------------------------------------------------------
     deck.title_slide(
         "Ask My Docs",
-        "Week 1 review — embeddings and chunking",
-        "Mon 21 – Sun 27 Sep 2026     ·     A question-answering tool over my own notes, built without a framework",
+        "Weeks 1 and 2 review — embeddings, chunking, retrieval",
+        "21 Sep – 4 Oct 2026     ·     A question-answering tool over my own notes, built without a framework",
         notes="""
 Opening line, roughly:
 
@@ -517,6 +555,23 @@ What I would not cut is citations, the no-answer handling, or the demo video.
     )
 
     # 4 -------------------------------------------------------------------
+    deck.section_slide(
+        "Week 1  ·  21–27 September",
+        "Embeddings and chunking",
+        [
+            "Turn text into something a computer can compare",
+            "Cut documents into pieces small enough to be useful",
+            "Search them, with no database involved yet",
+        ],
+        notes="""
+Short pause here. "First week was the two stages that come before anything
+clever: turning text into numbers, and deciding how to cut documents up."
+
+Four slides in this section.
+        """,
+    )
+
+    # 5 -------------------------------------------------------------------
     deck.table_slide(
         "Embeddings: does this actually work?",
         ["what I compared", "score"],
@@ -527,7 +582,7 @@ What I would not cut is citations, the no-answer handling, or the demo video.
         ],
         highlight_rows={2},
         column_widths=[3.4, 0.8],
-        kicker="Embeddings",
+        kicker="W1 · Embeddings",
         caption="I chose a free local model (all-MiniLM-L6-v2) so re-running experiments costs nothing.",
         footer="The highlighted pair shares no useful words at all — a keyword search would score it near zero",
         notes="""
@@ -561,7 +616,7 @@ short sentence and a long paragraph that mean the same thing still match.
             "each number stands for — and one number on its own tells you nothing.",
             "What carries the information is how close two pieces of text end up to each other.",
         ],
-        kicker="Embeddings",
+        kicker="W1 · Embeddings",
         banner="DRAFT — rewrite this in my own voice before presenting, then delete this strip",
         footer="Evidence: 7 characters and 196 characters both produce exactly 384 numbers; two sentences with no shared words scored 0.618",
         notes="""
@@ -600,7 +655,7 @@ the 0.618 score live proves the understanding better than a polished sentence.
         ],
         highlight_rows={0},
         column_widths=[2.4, 1.6],
-        kicker="Chunking",
+        kicker="W1 · Chunking",
         caption="I hid one sentence so that a 500-character cut would land in the middle of it.",
         footer="Overlap means each chunk repeats the last 100 characters of the one before it",
         notes="""
@@ -632,7 +687,7 @@ Row 3 fixes it deliberately. Overlap does not depend on the text cooperating.
         ],
         highlight_rows={1},
         column_widths=[1.2, 0.8, 2.6],
-        kicker="Chunking",
+        kicker="W1 · Chunking",
         caption="Same document, cut three ways. Small chunks are precise; big chunks drag in clutter.",
         footer="My choice for now: 500 characters with 100 overlap — provisional until Week 2 tests it",
         notes="""
@@ -657,7 +712,7 @@ because a quarter of what I save is a second copy. Irrelevant at this size.
 
     # 8 -------------------------------------------------------------------
     deck.statement_slide(
-        "Friday: I built search with no database at all",
+        "I built search with no database at all",
         "The database is less accurate than my version",
         [
             "I embedded all 155 chunks into a plain Python list and searched it with a loop.",
@@ -666,7 +721,7 @@ because a quarter of what I save is a second copy. Irrelevant at this size.
             "It trades a small chance of missing a match for speed that holds up as notes grow.",
             "I assumed a real database meant better. It means faster, and slightly less reliable.",
         ],
-        kicker="Search",
+        kicker="W1 · Search",
         colour=TEAL,
         notes="""
 This is your answer to "do I understand how a vector database finds similar
@@ -694,7 +749,7 @@ That is a better reason to adopt it than speed, and it is the honest one.
         ],
         highlight_rows={2},
         column_widths=[3.2, 1.0],
-        kicker="Edge case",
+        kicker="W1 · Edge case",
         caption="The search still returned five chunks. It always returns something.",
         footer="So cutting off low scores is necessary but not enough — Week 3's prompt must also allow \"I don't know\"",
         notes="""
@@ -719,36 +774,183 @@ a prompt that lets the model say it cannot find the answer.
         """,
     )
 
-    # 10 ------------------------------------------------------------------
+    # 11 ------------------------------------------------------------------
+    deck.section_slide(
+        "Week 2  ·  28 September – 4 October",
+        "Vector database and retrieval",
+        [
+            "Swap my Python list for a real database that survives restarts",
+            "Turn a question into the passages that answer it",
+            "Decide how many passages to fetch — by measuring, not guessing",
+        ],
+        notes="""
+"Week two replaced the list with a real database, and built the retrieval step.
+Three of the slides here resolve questions the first week left open."
+
+That framing is worth saying out loud - it shows the weeks connect rather than
+being two separate piles of work.
+        """,
+    )
+
+    # 12 ------------------------------------------------------------------
+    deck.bullets_slide(
+        "What the database actually changed",
+        [
+            (0, "**171 chunks now live in a local database on disk, not in memory"),
+            (0, "**The real win is not speed — it is that the index survives restarting"),
+            (1, "Before: every run re-embedded all my notes first, about a minute of waiting"),
+            (1, "Now: that cost is paid once, when my notes change"),
+            (0, "**I had to set the distance measure by hand"),
+            (1, "Chroma defaults to a different one that would not match Week 1's scores"),
+            (0, "It also refuses to answer if the notes were indexed by a different model"),
+        ],
+        kicker="W2 · Database",
+        footer="That last guard matters: querying with the wrong model returns confident nonsense and no error at all",
+        notes="""
+The honest framing: I did not adopt a database because my search was too slow. At
+171 chunks my loop took 15 milliseconds. I adopted it because the index persists,
+and because the brief asks for one.
+
+On the distance measure, if he asks: Chroma's default is squared L2. I measured
+it - for two unrelated directions it reports 2.0 where cosine reports 1.0. For my
+model both rank the same way, so nothing would have looked broken. It would only
+have bitten me later if I switched models. One line to remove the risk.
+
+On the model guard: this is the nastiest failure in the whole pipeline, because
+there is no symptom. Embeddings from two models are not comparable, but querying
+across them raises nothing - you just get well-formed, meaningless results. So the
+database records which model built it and refuses a mismatch.
+        """,
+    )
+
+    # 13 ------------------------------------------------------------------
     deck.table_slide(
-        "Where I stand, and what is left",
+        "Does the shortcut cost accuracy? I measured it",
+        ["question", "database", "my Week 1 loop", "same answers?"],
+        [
+            ["\"Why does overlap matter?\"", "11.6ms", "13.1ms", "5 of 5"],
+            ["\"How many results should I fetch?\"", "3.5ms", "14.9ms", "5 of 5"],
+        ],
+        column_widths=[2.6, 0.9, 1.1, 1.0],
+        kicker="W2 · Accuracy",
+        caption="Week 1 said the database would be approximate. This is the check.",
+        footer="100% agreement — but expected at this size, not proof that the shortcut is free",
+        notes="""
+This closes the loop on the Week 1 slide where I said the database would be less
+accurate than my loop.
+
+It agreed with my loop on every single result. But be careful how you present
+that, because it is not the win it looks like: at 171 chunks the graph it walks is
+small enough to reach the right answers anyway. The approximation only starts
+costing accuracy when the data is large enough that it has to skip meaningful
+parts. So this confirms I wired it up correctly - it does not prove approximate
+search is free.
+
+One more detail worth mentioning: the scores it returned matched my hand-written
+calculation to four decimal places - 0.6690, 0.6070, 0.5247 on the same chunks.
+Two independent implementations agreeing exactly is good evidence that neither my
+arithmetic nor my configuration is wrong.
+        """,
+    )
+
+    # 14 ------------------------------------------------------------------
+    deck.table_slide(
+        "How many passages should I fetch?",
+        ["chunks fetched", "average relevance", "text sent", "wasted slots"],
+        [
+            ["3", "0.4296", "1,380 chars", "0.0"],
+            ["5", "0.4034", "2,211 chars", "0.5"],
+            ["10", "0.3681", "4,636 chars", "2.8"],
+        ],
+        highlight_rows={1},
+        column_widths=[1.3, 1.4, 1.2, 1.1],
+        kicker="W2 · Tuning",
+        caption="Averaged over four questions. \"Wasted slots\" are neighbouring chunks returned twice.",
+        footer="I chose 5 — still provisional until I test real answer quality in Week 3",
+        notes="""
+This is the "more context versus more noise" tradeoff with numbers on it.
+
+Going from 3 to 10 costs 3.4 times the text for a 0.06 drop in average relevance.
+
+The wasted slots column is the interesting one, and it connects back to chunking.
+Because consecutive chunks overlap by 100 characters, sometimes two neighbours
+both come back for the same question - so I am sending the model the same text
+twice. At 10, nearly 3 of the 10 slots went on duplicates.
+
+Why 5 and not 3: at 3 I was pulling from only two and a half documents on average,
+which makes it too easy to miss a detail that fell just outside. 5 gets me three
+sources and about 2,200 characters, which is a comfortable prompt size.
+        """,
+    )
+
+    # 15 ------------------------------------------------------------------
+    deck.table_slide(
+        "The idea that did not survive testing",
+        ["cut-off", "Q1", "Q2", "Q3", "Q4", "bad question"],
+        [
+            ["none", "5", "5", "5", "5", "5"],
+            ["0.30", "5", "3", "5", "5", "2"],
+            ["0.35", "5", "2", "2", "4", "0"],
+            ["0.40", "5", "0", "0", "1", "0"],
+        ],
+        highlight_rows={2, 3},
+        column_widths=[1.1, 0.6, 0.6, 0.6, 0.6, 1.2],
+        kicker="W2 · Correction",
+        caption="Week 1 suggested ignoring low scores. Numbers are passages kept per question.",
+        footer="The cut-off that silences the bad question also strips real answers from Q2 and Q3",
+        notes="""
+This is the slide I would most want to be asked about, because it is where I
+corrected my own mistake.
+
+Week 1 ended with "just ignore anything below a certain score". Week 2 tested it
+properly and it does not work. Read the 0.35 row: the bad question is finally
+silenced, but questions 2 and 3 drop to two passages. At 0.40 they return nothing
+at all, for questions my notes genuinely answer.
+
+Be honest about the process here: my first version of this test used only question
+1, which scores high on everything, and a 0.35 cut-off looked perfectly safe.
+Sweeping all four is what exposed the conflict. A test built around the best case
+is worse than no test, because it gives you false confidence.
+
+Why it happens: the scores are not comparable between questions. A question worded
+the way my notes are written scores high throughout; one worded differently scores
+low throughout, even when its best match is exactly right.
+
+So the cut-off ships switched off, and Week 3's prompt has to be the real defence -
+the model needs permission to say it cannot find the answer.
+        """,
+    )
+
+    # 16 ------------------------------------------------------------------
+    deck.table_slide(
+        "Where I stand after two weeks",
         ["item", "state"],
         [
-            ["Embeddings working, similarity measured", "done"],
-            ["Chunking with overlap, sizes compared", "done"],
-            ["All chunks embedded and searchable", "done"],
+            ["Embeddings, similarity, chunking with overlap", "done"],
+            ["Chunk size and top-k chosen from measurements", "done"],
+            ["Real database, retrieval, results logged to file", "done"],
             ["Add 5–10 of my own notes as the test set", "STILL TO DO"],
-            ["Write my three explanations in my own words", "STILL TO DO"],
+            ["Write my explanations in my own words", "STILL TO DO"],
+            ["Week 3: generate answers, cite sources, README, video", "to come"],
         ],
         highlight_rows={3, 4},
-        column_widths=[3.0, 1.1],
+        column_widths=[3.2, 1.1],
         kicker="Status",
-        caption="Next week: Chroma, retrieval, and tuning how many chunks to fetch per question.",
-        footer="Both outstanding items are mine — nothing is blocked on anyone else",
+        caption="Everything measured so far describes a stand-in dataset, not my own notes.",
+        footer="Outstanding items are mine — and I still need your answer on the deadline",
         notes="""
 Present this plainly, no softening.
 
-Be honest about the test set: all my measurements so far ran against this
-project's own documentation, because my notes folder is still empty. The numbers
-are real but they describe the wrong documents. I need to re-run everything on my
-own notes, and the README has to describe the set I actually ship.
+The stand-in dataset is the thing to own up to. My notes folder is still empty, so
+I measured against this project's own documentation. The numbers are real but they
+describe the wrong documents, and I know it - the chunk count drifted from 159 to
+171 during the week purely because I kept editing those files. Same code,
+different numbers. That is exactly why a fixed dataset matters, and it is my first
+job before Week 3.
 
-The three explanations are: what an embedding is, why splitting documents
-matters, and what semantic search means in plain language.
-
-Close by handing him the decision from slide 3. "So the one thing I need from you
-is the deadline - 4 October or 11 October?" That makes the meeting useful rather
-than just a status report.
+Then close on the deadline question from slide 3. "So the one thing I need from
+you is whether the deadline is 4 or 11 October." That makes the meeting useful
+rather than just a report.
         """,
     )
 
@@ -756,14 +958,14 @@ than just a status report.
 
 
 def main() -> int:
-    output = Path(__file__).resolve().parent / "week1-review.pptx"
+    output = Path(__file__).resolve().parent / "weeks1-2-review.pptx"
     deck = build()
     deck.save(output)
 
     print(f"Wrote {output}")
     print(f"  {len(deck.presentation.slides)} slides, all with speaker notes")
-    print("\nSlide 5 is intentionally unfinished: 'What an embedding is'.")
-    print("Write it in your own words before presenting.")
+    print("\nSlide 6 carries a DRAFT strip: 'What an embedding is'.")
+    print("Put it in your own words, then delete the strip.")
     return 0
 
 
