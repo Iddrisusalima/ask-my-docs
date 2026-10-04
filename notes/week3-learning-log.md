@@ -128,12 +128,129 @@ _(partly done as part of Mon–Tue; still to verify across more questions)_
 
 ## Thu — Test and refine
 
-_(not started)_
+### The dataset is finally real
+
+`sample-notes/` now holds **5 of my own notes** — my Project 1 write-ups:
+`project1-build-log.md`, `project1-overview.md`, `project1-learnings.md`,
+`project1-blog-post.md`, `project1-screenshots.md`. 79,581 characters.
+
+Checked for secrets and personal details before committing, since the folder goes
+to a public repo: no API keys, no email addresses, no phone numbers.
+
+Good choice of dataset for a second reason — the notes are about prompt
+engineering and token economics, so the questions I ask have real answers I can
+verify by opening the file.
 
 ### Ten questions, rated
 
-| # | question | answer quality | notes |
-| - | -------- | -------------- | ----- |
+Settings: chunk size 350, overlap 70, top-k 5, no score floor,
+`gemini-3.5-flash-lite`.
+
+| # | question | result | cited | verdict |
+| - | -------- | ------ | ----- | ------- |
+| 1 | What does it mean that the API is stateless? | answered | [2][3] | **good** |
+| 2 | What is the difference between training and inference? | answered | [1][3][4][5] | **good** |
+| 3 | What do roles do in a chat request? | answered | [1] | **good** |
+| 4 | Why is the total token count not always input plus output? | answered | [1][5] | **good** |
+| 5 | What is a context window measured in? | answered | [1][2][3] | **good** |
+| 6 | When streaming, when does token usage arrive? | answered | [3][4][5] | **good** |
+| 7 | How much influence does the system instruction have? | answered | [2][5] | **good** |
+| 8 | How did I keep my API key safe? | answered | [4] | **partial** — got the `.gitignore` point, missed the other three steps |
+| 9 | What is the capital of Peru? | refused | — | **correct refusal** |
+| 10 | How do I fix a leaking radiator? | refused | — | **correct refusal** |
+
+**8 of 8 answerable questions answered with correct citations. 2 of 2 controls
+refused.** I opened the cited files and checked: every citation genuinely
+contains the claim.
+
+### How I got there — the iteration loop the brief predicted
+
+The first run was **not** 8 of 8. At the documented 500/100 setting, two
+questions were refused that my notes clearly answer. Diagnosing those produced
+the two most useful findings of the week.
+
+**Failure 1 — "Why are input and output tokens priced differently?"**
+
+The answer exists at `project1-build-log.md` line 415: *"Output tokens cost about
+8x more than input tokens. $2.50 versus $0.30 per..."*. But the passage retrieval
+handed the model began **mid-word**:
+
+```
+y 8x more per token than
+input**. The `/stats` command prints...
+```
+
+That is "...roughl**y 8x** more per token" with its opening sliced off into the
+previous chunk. The model received an incoherent fragment and refused. At top-k
+10 the clean statement still never appeared — no chunk contained it whole.
+
+**This is Week 1's boundary problem, resurfacing where it finally costs an
+answer.** In Week 1 I demonstrated it with a planted sentence in a test document.
+Here it happened by itself, on my real notes, and the symptom was not a missing
+chunk — it was a refusal that looked like the tool working correctly.
+
+Re-ingesting at 900/300 fixed the fragment, and the answer changed to:
+
+> "I can't find the answer to that in your notes. The notes state that input and
+> output are priced differently [2][3], but they do not explain *why* the pricing
+> difference exists."
+
+Which is **correct** — and my question was the faulty part. My notes record
+*that* the prices differ, not *why* Google sets them that way. Rule 4 of the
+system prompt ("give the part they support and say what is missing") produced
+exactly the right behaviour. Lesson: when an answer looks wrong, check the
+question before blaming the pipeline.
+
+**Failure 2 — "How did I keep my API key safe?"**
+
+My notes answer this in four numbered steps under a heading literally called
+"How I keep the key safe". At both 500/100 and 900/300 the tool refused, and
+retrieval returned a passage about token counts and history resets instead.
+
+The cause is the opposite of failure 1. That section is only eight lines long. At
+900 characters it gets absorbed into a chunk dominated by surrounding material,
+and its meaning is diluted until it no longer matches a question about key
+safety. **That is the "large chunks dilute the match" tradeoff from Week 1,
+biting in the other direction.**
+
+At 350/70 the section occupies a chunk of its own, and the tool answers:
+
+> "You kept your API key safe by writing `.gitignore` before the key existed on
+> disk [4]."
+
+Correct, though partial — it got one of four steps.
+
+### The decision: chunk size 350, overlap 70
+
+Changed from the provisional 500/100 chosen in Week 1.
+
+| setting | Q1 (token pricing) | Q8 (key safety) |
+| ------- | ------------------ | --------------- |
+| 500 / 100 | refused — mid-word fragment | refused |
+| 900 / 300 | correct partial answer | refused — diluted |
+| **350 / 70** | fine | **answered** |
+
+Why smaller won on my notes: they are written in short sections with frequent
+headings. Each heading introduces a distinct idea, and a 350-character chunk maps
+roughly to one of those sections. At 900 characters a chunk spans several
+sections and its embedding becomes an average of unrelated ideas.
+
+**This is why the Week 1 choice had to stay provisional.** 500/100 was defensible
+from chunk-count statistics, which is all I had then. Answer quality on real
+notes is a different measurement and it pointed somewhere else. The brief said
+this iteration loop was normal and expected; it was.
+
+Honest limitation: 350/70 is tuned to how *my* notes are written. Someone with
+long flowing prose and few headings would likely need larger chunks. The right
+answer is a property of the documents, not a universal constant.
+
+### Still open from this round
+
+- Q8 returns one of four steps. Worth testing whether top-k 7 or 8 recovers the
+  rest, now that chunks are smaller and each holds less.
+- Several answers cite only 1 of 5 passages. With smaller chunks, a slightly
+  higher top-k may now be the better setting — the earlier argument against 10
+  was measured at 500/100 and may no longer hold.
 
 ---
 
