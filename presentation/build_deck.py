@@ -2,13 +2,13 @@
 Generate the Week 1 review deck for the mentor check-in.
 
 Run it:
-    python presentation/build_week1_deck.py
+    python presentation/build_deck.py
 
 Output:
-    presentation/week1-review.pptx
+    presentation/review-deck.pptx
 
 Ten slides. Every number comes from a real run recorded in
-notes/week1-learning-log.md - if a figure is not in that file, it does not belong
+notes/learning-log.md - if a figure is not in that file, it does not belong
 on a slide.
 
 Needs python-pptx, deliberately kept out of requirements.txt since the tool
@@ -958,7 +958,7 @@ rather than just a report.
 
 
 def main() -> int:
-    output = Path(__file__).resolve().parent / "weeks1-2-review.pptx"
+    output = Path(__file__).resolve().parent / "review-deck.pptx"
     deck = build()
     deck.save(output)
 

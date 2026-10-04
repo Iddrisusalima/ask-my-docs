@@ -1,6 +1,6 @@
 # Presentation Script — Weeks 1 and 2
 
-Plain-language notes for `weeks1-2-review.pptx`. For each slide: what it shows,
+Plain-language notes for `review-deck.pptx`. For each slide: what it shows,
 what to say, and the question most likely to come back at you.
 
 Read this once tonight and once on Saturday morning. Don't memorise it — the aim
@@ -387,8 +387,8 @@ topic sharply. Cutting it into pieces means each piece keeps its own meaning.
 Three sentences that rescue most situations:
 
 - *"Let me show you"* — then run `scripts\05_retrieve.py --question "..."` live.
-- *"I measured that, let me find the number"* — it's in `notes/week1-learning-log.md`
-  or `notes/week2-learning-log.md`.
+- *"I measured that, let me find the number"* — it's in `notes/learning-log.md`
+  or `notes/learning-log.md`.
 - *"I don't know yet, that's week three"* — true for anything about answer quality,
   citations, or the prompt.
 

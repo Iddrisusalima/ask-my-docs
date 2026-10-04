@@ -237,7 +237,7 @@ constant.
 Ten questions at the final settings: **8 of 8 answerable questions answered with
 correct citations, 2 of 2 unanswerable questions refused.** Each citation was
 checked by opening the source file. The full table is in
-`notes/week3-learning-log.md`.
+`notes/learning-log.md`.
 
 ---
 
@@ -253,8 +253,8 @@ checked by opening the source file. The full table is in
 > - the RAG pipeline end to end
 > - how Chroma compares to one alternative
 >
-> The measurements to draw on are in `notes/week1-learning-log.md`,
-> `notes/week2-learning-log.md` and `notes/week3-learning-log.md`.
+> The measurements to draw on are in `notes/learning-log.md`,
+> `notes/learning-log.md` and `notes/learning-log.md`.
 
 ---
 

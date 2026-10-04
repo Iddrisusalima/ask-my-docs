@@ -87,7 +87,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 ## Presentation decks
 
-`presentation/build_week1_deck.py` generates `week1-review.pptx` for the mentor
+`presentation/build_deck.py` generates `review-deck.pptx` for the mentor
 check-in. Decks are generated from a script rather than hand-edited so that every
 figure traces back to a recorded run, and so a deck can be regenerated after new
 measurements instead of being patched by hand.
@@ -105,7 +105,7 @@ not need it, and a reviewer cloning the repo should not have to install it:
 
 ```powershell
 .\venv\Scripts\python.exe -m pip install python-pptx==1.0.2
-.\venv\Scripts\python.exe presentation\build_week1_deck.py
+.\venv\Scripts\python.exe presentation\build_deck.py
 ```
 
 To check a deck renders correctly, export to PNG through PowerPoint COM and look

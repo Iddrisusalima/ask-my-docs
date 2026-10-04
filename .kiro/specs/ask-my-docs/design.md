@@ -247,8 +247,8 @@ A question through the built pipeline:
    `RetrievedChunk` list ordered 0.71, 0.66, 0.51, 0.44, 0.41
 4. `build_prompt` numbers them `[1]`–`[5]`, fits them into the character budget
 5. LLM answers, citing `[1]` and `[3]`
-6. Display resolves those markers to `week1-learning-log.md#4` and
-   `week1-learning-log.md#7` with their scores
+6. Display resolves those markers to `learning-log.md#4` and
+   `learning-log.md#7` with their scores
 7. The question and all five retrieved chunks append to `logs/retrieval.log`
 
 ## Configuration

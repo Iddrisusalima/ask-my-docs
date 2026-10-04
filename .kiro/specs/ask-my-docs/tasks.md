@@ -48,7 +48,7 @@ something from the user before they can start.
   - _Requirements: 2.6_
 - [x] 4.4 Print the full 6×6 similarity matrix with readable labels
   - _Requirements: 2.5_
-- [x] 4.5 Run the script and record real numbers in `notes/week1-learning-log.md`
+- [x] 4.5 Run the script and record real numbers in `notes/learning-log.md`
   - measured: related average 0.617, unrelated average 0.031, gap 0.586
   - _Requirements: 11.1, 11.2_
 
@@ -197,7 +197,7 @@ something from the user before they can start.
   - previously hardcoded in three scripts, which would have made the documented values decorative
   - _Requirements: 10.3_
 - [ ] 11.2 User writes a comparison of Chroma against one alternative
-  - factual contrasts supplied in `notes/week2-learning-log.md`; the argument must be theirs
+  - factual contrasts supplied in `notes/learning-log.md`; the argument must be theirs
   - _Requirements: 11.3, 11.4_
 - [x] 11.3 Commit Week 2 work
 - [ ] 11.4 Confirm the real deadline with the mentor if still unresolved, and cut scope now if it holds at Oct 4
