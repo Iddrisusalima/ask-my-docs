@@ -52,8 +52,8 @@ something from the user before they can start.
   - measured: related average 0.617, unrelated average 0.031, gap 0.586
   - _Requirements: 11.1, 11.2_
 
-- [ ] 5. **BLOCKED** — Test dataset
-- [ ] 5.1 User adds 5–10 non-sensitive `.md` or `.pdf` notes to `sample-notes/`
+- [x] 5. **BLOCKED** — Test dataset
+- [x] 5.1 User adds 5–10 non-sensitive `.md` or `.pdf` notes to `sample-notes/`
   - nothing in section 6 or 7 can be measured without real documents
   - _Requirements: 12.2_
 
@@ -72,7 +72,7 @@ something from the user before they can start.
   - `UnicodeEncodeError` on a `→`; `src/console.py` switches stdout to UTF-8 with `errors="replace"`
   - _Requirements: 10.4_
 
-- [ ] 7. Chunking pipeline — Wed–Thu
+- [x] 7. Chunking pipeline — Wed–Thu
 - [x] 7.1 Write `src/chunker.py` with `chunk_text` producing fixed-size overlapping windows
   - advance by `chunk_size - overlap`; reject overlap >= chunk_size
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.7_
@@ -91,7 +91,7 @@ something from the user before they can start.
   - six pairs measured; boundary test shows 500/0 hard cuts leaving the fact in **no chunk at all**
   - 20% overlap costs 1.26x storage; 500/0 → 500/100 raises chunk count 120 → 149
   - _Requirements: 11.2_
-- [ ] 7.6a Re-run the sweep against `sample-notes/` once the user's own notes are in
+- [x] 7.6a Re-run the sweep against `sample-notes/` once the user's own notes are in
   - the logged table describes `.kiro/` docs, used as an interim corpus; the README must describe the shipped dataset
   - _Requirements: 11.2, 12.2_
 - [ ] 7.7 User writes, in their own words, why splitting matters
@@ -206,43 +206,43 @@ something from the user before they can start.
 
 ## Week 3 — Oct 5–11 — Generation, Full Pipeline & Submission
 
-- [ ] 12. Grounded generation — Mon–Tue
-- [ ] 12.1 Write `build_prompt` in `src/generator.py` as a pure function
+- [x] 12. Grounded generation — Mon–Tue
+- [x] 12.1 Write `build_prompt` in `src/generator.py` as a pure function
   - returns the prompt and the chunks that actually fit the budget, so citations match what the model saw
   - _Requirements: 8.1, 8.5_
-- [ ] 12.2 Number context passages `[1]`, `[2]`, … in the prompt
+- [x] 12.2 Number context passages `[1]`, `[2]`, … in the prompt
   - _Requirements: 9.3_
-- [ ] 12.3 Write the system prompt instructing context-only answers with an explicit way to refuse
+- [x] 12.3 Write the system prompt instructing context-only answers with an explicit way to refuse
   - a model given no acceptable refusal will invent one instead
   - _Requirements: 8.2, 8.4_
-- [ ] 12.4 Call the chat model and handle API failure without losing the question or context
+- [x] 12.4 Call the chat model and handle API failure without losing the question or context
   - _Requirements: 8.7_
-- [ ] 12.5 Add a flag to print the assembled prompt without calling the API
+- [x] 12.5 Add a flag to print the assembled prompt without calling the API
   - needed to demonstrate grounding in the video rather than assert it
   - _Requirements: 8.6, 10.5_
-- [ ] 12.6 Verify grounding with a fact that exists only in the notes
+- [x] 12.6 Verify grounding with a fact that exists only in the notes
   - and a fact in the notes that contradicts common knowledge
   - _Requirements: 8.3_
 
-- [ ] 13. Source citations — Wed
-- [ ] 13.1 Resolve cited passage numbers back to source filename, chunk id, and page
+- [x] 13. Source citations — Wed
+- [x] 13.1 Resolve cited passage numbers back to source filename, chunk id, and page
   - _Requirements: 9.1, 9.2_
-- [ ] 13.2 Display similarity score alongside each citation
+- [x] 13.2 Display similarity score alongside each citation
   - _Requirements: 9.4_
-- [ ] 13.3 Open the source files and confirm each citation genuinely contains the claim
+- [x] 13.3 Open the source files and confirm each citation genuinely contains the claim
   - _Requirements: 9.1_
 
-- [ ] 14. Test and refine — Thu
-- [ ] 14.1 Write `scripts/06_ask.py` as the full pipeline entry point, one-shot and interactive
+- [x] 14. Test and refine — Thu
+- [x] 14.1 Write `scripts/06_ask.py` as the full pipeline entry point, one-shot and interactive
   - _Requirements: 10.2, 10.3_
-- [ ] 14.2 Exit non-zero with clean messages on failure instead of tracebacks
+- [x] 14.2 Exit non-zero with clean messages on failure instead of tracebacks
   - _Requirements: 10.4_
-- [ ] 14.3 Run at least 10 questions and rate each answer's quality in the log
+- [x] 14.3 Run at least 10 questions and rate each answer's quality in the log
   - _Requirements: 11.2_
-- [ ] 14.4 Test a question with no answer in the notes and confirm graceful refusal
+- [x] 14.4 Test a question with no answer in the notes and confirm graceful refusal
   - tune `MIN_SCORE` from the observed score distribution
   - _Requirements: 8.4, 6.6_
-- [ ] 14.5 Revisit chunk size, top-k, or the prompt based on the ratings, and record what changed
+- [x] 14.5 Revisit chunk size, top-k, or the prompt based on the ratings, and record what changed
   - _Requirements: 11.2_
 
 - [ ] 15. Polish and document — Fri–Sat
@@ -260,7 +260,7 @@ something from the user before they can start.
   - _Requirements: 12.3_
 - [ ] 15.6 Capture a screenshot of a real question, answer, and citation for the README
   - _Requirements: 12.3_
-- [ ] 15.7 Verify no secrets, venv, database, or model cache are tracked by git
+- [x] 15.7 Verify no secrets, venv, database, or model cache are tracked by git
   - _Requirements: 12.4_
 - [ ] 15.8 Record the 3–4 minute demo: ingestion, then 2–3 live questions, narrating each stage
   - _Requirements: 12.6_
