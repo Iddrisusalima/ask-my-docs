@@ -196,7 +196,7 @@ What the numbers say:
   characters — the leftover tail of a file. A 23-character chunk carries almost
   no meaning, so it will either never be retrieved or, worse, be retrieved for
   the wrong reason. Worth checking against my own notes: many short files produce
-  many near-useless tail chunks.
+  many near-useless tail chunks.yu
 - **A second knob hides inside overlap.** Going 500/0 → 500/100 raised the chunk
   count 124 → 155. More chunks means more embedding calls and more competition
   for slots in top-k, since near-duplicate chunks can occupy several of them.
