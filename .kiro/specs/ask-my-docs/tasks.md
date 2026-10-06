@@ -39,7 +39,7 @@ something from the user before they can start.
   - _Requirements: 2.5_
 
 - [x] 4. Embedding demonstration script — Mon–Tue
-- [x] 4.1 Write `scripts/01_embedding_basics.py` printing dimensionality and sample values
+- [x] 4.1 Write `scripts/embeddings.py` printing dimensionality and sample values
   - _Requirements: 1.1_
 - [x] 4.2 Demonstrate that input length does not change output length
   - _Requirements: 1.2_
@@ -84,7 +84,7 @@ something from the user before they can start.
   - _Requirements: 4.6, 9.1, 9.2_
 - [x] 7.4 Discard empty and whitespace-only chunks before they reach the embedder
   - _Requirements: 4.5, 1.6_
-- [x] 7.5 Write `scripts/02_chunking_demo.py` comparing size/overlap settings on real notes
+- [x] 7.5 Write `scripts/chunking.py` comparing size/overlap settings on real notes
   - six configurations swept; Part 3 demonstrates a planted fact severed by a boundary
   - _Requirements: 4.7, 10.5_
 - [x] 7.6 Run the experiment across at least three size/overlap pairs and log observations
@@ -99,7 +99,7 @@ something from the user before they can start.
   - _Requirements: 11.3, 11.4_
 
 - [ ] 8. Week 1 wrap-up — Fri
-- [x] 8.1 Write `scripts/03_embed_chunks_memory.py` embedding every chunk into a plain list
+- [x] 8.1 Write `scripts/search_in_memory.py` embedding every chunk into a plain list
   - 155 chunks embedded in 29.90s (192.9ms each, CPU); store is a `list` of `dict`
   - _Requirements: 1.7, 2.1_
 - [x] 8.2 Search that list with a test question and print ranked results
@@ -144,7 +144,7 @@ something from the user before they can start.
 - [x] 9.5 Report an actionable message when the collection is empty or missing
   - both cases name the ingestion command; `count()` returns 0 rather than raising
   - _Requirements: 5.6_
-- [x] 9.6 Write `scripts/04_ingest.py` running load → chunk → embed → index
+- [x] 9.6 Write `scripts/ingest.py` running load → chunk → embed → index
   - 159 chunks: embed 61.79s, index 0.54s — embedding dominates ingestion by ~115x
   - confirms persistence by reopening the collection with a fresh `VectorStore`
   - _Requirements: 5.4, 10.1, 10.3_
@@ -168,7 +168,7 @@ something from the user before they can start.
 - [x] 10.4 Add an optional `min_score` floor returning an empty set when nothing clears it
   - defaults to off, for the reason measured in 10.7a
   - _Requirements: 6.6_
-- [x] 10.5 Write `scripts/05_retrieve.py` printing retrieved chunks with scores
+- [x] 10.5 Write `scripts/retrieve.py` printing retrieved chunks with scores
   - also flags results that are neighbouring chunks of one document, i.e. duplicated context
   - _Requirements: 10.2, 10.5_
 - [x] 10.6 Test several questions and manually judge whether retrieved chunks are relevant
@@ -233,7 +233,7 @@ something from the user before they can start.
   - _Requirements: 9.1_
 
 - [x] 14. Test and refine — Thu
-- [x] 14.1 Write `scripts/06_ask.py` as the full pipeline entry point, one-shot and interactive
+- [x] 14.1 Write `scripts/ask.py` as the full pipeline entry point, one-shot and interactive
   - _Requirements: 10.2, 10.3_
 - [x] 14.2 Exit non-zero with clean messages on failure instead of tracebacks
   - _Requirements: 10.4_

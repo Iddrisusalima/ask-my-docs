@@ -2,9 +2,9 @@
 Stage 3 - Search by hand: embed every chunk into a list and search it with a loop.
 
 Run it:
-    python scripts/03_embed_chunks_memory.py
-    python scripts/03_embed_chunks_memory.py --folder notes --top-k 5
-    python scripts/03_embed_chunks_memory.py --question "how does overlap help?"
+    python scripts/search_in_memory.py
+    python scripts/search_in_memory.py --folder notes --top-k 5
+    python scripts/search_in_memory.py --question "how does overlap help?"
 
 This is a complete, working semantic search engine with no database in it. The
 store is a Python list; the search is a `for` loop over the cosine similarity

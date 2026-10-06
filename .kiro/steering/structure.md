@@ -23,8 +23,8 @@ ASK-MY-DOCS/
 │   ├── retriever.py         # (Week 2) question -> top-k chunks
 │   └── generator.py         # (Week 3) context + question -> cited answer
 ├── scripts/                 # numbered, runnable, demo-able
-│   ├── 01_embedding_basics.py
-│   └── 02_chunking_demo.py
+│   ├── embeddings.py
+│   └── chunking.py
 ├── notes/                   # the user's written learning log per week
 ├── presentation/            # mentor check-in decks + the script that builds them
 ├── sample-notes/            # committed test dataset, non-sensitive

@@ -2,12 +2,12 @@
 Stage 5 - Retrieval: choosing top-k by measuring rather than guessing.
 
 Run it:
-    python scripts/05_retrieve.py
-    python scripts/05_retrieve.py --question "why does overlap matter?"
-    python scripts/05_retrieve.py --top-k 10 --min-score 0.35
+    python scripts/retrieve.py
+    python scripts/retrieve.py --question "why does overlap matter?"
+    python scripts/retrieve.py --top-k 10 --min-score 0.35
 
 Requires an index. Build one first:
-    python scripts/04_ingest.py --folder sample-notes
+    python scripts/ingest.py --folder sample-notes
 
 The brief asks two things of this stage: check by hand whether retrieved chunks
 are actually relevant, and tune top-k while observing the tradeoff between more

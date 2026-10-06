@@ -2,9 +2,9 @@
 Stage 2 - Chunking: build and inspect the chunking pipeline.
 
 Run it:
-    python scripts/02_chunking_demo.py
-    python scripts/02_chunking_demo.py --folder notes
-    python scripts/02_chunking_demo.py --chunk-size 800 --overlap 150
+    python scripts/chunking.py
+    python scripts/chunking.py --folder notes
+    python scripts/chunking.py --chunk-size 800 --overlap 150
 
 What this script demonstrates, in order:
   1. What a chunk physically is, on a short text you can read in full.

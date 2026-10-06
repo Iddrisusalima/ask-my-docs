@@ -97,13 +97,13 @@ A free Gemini key is available from [Google AI Studio](https://aistudio.google.c
 
 ```powershell
 # index the notes - do this first, and again whenever the notes change
-.\venv\Scripts\python.exe scripts\04_ingest.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\ingest.py --folder sample-notes
 
 # ask a question
-.\venv\Scripts\python.exe scripts\06_ask.py --question "what is a context window measured in?"
+.\venv\Scripts\python.exe scripts\ask.py --question "what is a context window measured in?"
 
 # or interactively
-.\venv\Scripts\python.exe scripts\06_ask.py
+.\venv\Scripts\python.exe scripts\ask.py
 ```
 
 On Windows, run this once per terminal session so that arrows and dashes in your
@@ -130,7 +130,7 @@ reported by name and skipped, since OCR is out of scope.
 Real output, unedited:
 
 ```
-$ .\venv\Scripts\python.exe scripts\06_ask.py --question "what is the difference between training and inference?"
+$ .\venv\Scripts\python.exe scripts\ask.py --question "what is the difference between training and inference?"
 
 [ask] 317 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
 
@@ -265,22 +265,22 @@ demonstrated. Each script narrates what it is doing.
 
 ```powershell
 # embeddings: one sentence becomes 384 numbers; similar vs unrelated scores
-.\venv\Scripts\python.exe scripts\01_embedding_basics.py
+.\venv\Scripts\python.exe scripts\embeddings.py
 
 # chunking: what overlap duplicates, and a fact lost at a boundary
-.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\chunking.py --folder sample-notes
 
 # search with no database: a plain list and a for loop
-.\venv\Scripts\python.exe scripts\03_embed_chunks_memory.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\search_in_memory.py --folder sample-notes
 
 # ingestion: load, chunk, embed, index
-.\venv\Scripts\python.exe scripts\04_ingest.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\ingest.py --folder sample-notes
 
 # retrieval: scores, top-k comparison, relevance floor sweep
-.\venv\Scripts\python.exe scripts\05_retrieve.py
+.\venv\Scripts\python.exe scripts\retrieve.py
 
 # the full pipeline, including the exact prompt sent to the model
-.\venv\Scripts\python.exe scripts\06_ask.py --question "..." --show-prompt
+.\venv\Scripts\python.exe scripts\ask.py --question "..." --show-prompt
 ```
 
 `--show-prompt` prints the complete prompt and stops without calling any API. It

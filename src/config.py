@@ -11,8 +11,8 @@ with. Hardcoding a default in three different scripts is how a documented
 setting quietly stops being the real one.
 
 Every getter takes an override, because command-line flags must still win over
-the file - that is what makes the experiments in `02_chunking_demo.py` and
-`05_retrieve.py` possible without editing config between runs.
+the file - that is what makes the experiments in `chunking.py` and
+`retrieve.py` possible without editing config between runs.
 """
 
 from __future__ import annotations

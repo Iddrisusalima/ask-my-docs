@@ -2,12 +2,12 @@
 Stage 6 - Generation: the full pipeline. A question in, a cited answer out.
 
 Run it:
-    python scripts/06_ask.py --question "why does overlap matter?"
-    python scripts/06_ask.py --question "..." --show-prompt
-    python scripts/06_ask.py                      (interactive)
+    python scripts/ask.py --question "why does overlap matter?"
+    python scripts/ask.py --question "..." --show-prompt
+    python scripts/ask.py                      (interactive)
 
 Requires an index. Build one first:
-    python scripts/04_ingest.py --folder sample-notes
+    python scripts/ingest.py --folder sample-notes
 
 `--show-prompt` prints the exact text that would be sent to the model and stops,
 without calling any API. Two reasons that mode exists:
@@ -167,7 +167,7 @@ def main() -> int:
         print(
             "[error] No chunks are indexed yet.\n"
             "Run ingestion first:\n"
-            "  python scripts/04_ingest.py --folder sample-notes"
+            "  python scripts/ingest.py --folder sample-notes"
         )
         return 1
 

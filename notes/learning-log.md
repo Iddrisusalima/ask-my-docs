@@ -28,7 +28,7 @@ explanations at several points, and the final README pulls from here.
 
 ## 1. Embeddings and similarity
 
-Script: `scripts/01_embedding_basics.py`
+Script: `scripts/embeddings.py`
 Backend chosen: `local` — Sentence Transformers, `all-MiniLM-L6-v2`, 384 dimensions.
 
 ### Why this backend
@@ -66,7 +66,7 @@ close two pieces of text end up to each other.
 
 ### Cosine similarity results
 
-From `python scripts/01_embedding_basics.py`, model `all-MiniLM-L6-v2` (384 numbers per text).
+From `python scripts/embeddings.py`, model `all-MiniLM-L6-v2` (384 numbers per text).
 
 Group A (all about weekend baking):
 - A1 "I bake sourdough bread every weekend."
@@ -119,10 +119,10 @@ numbers on the grid, which is exactly what should happen.
 
 ## 2. Loading and chunking
 
-Code: `src/loader.py`, `src/chunker.py`, `scripts/02_chunking_demo.py`
+Code: `src/loader.py`, `src/chunker.py`, `scripts/chunking.py`
 
 ```powershell
-.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\chunking.py --folder sample-notes
 ```
 
 ### ⚠ Dataset caveat
@@ -278,10 +278,10 @@ chunks dropped before reaching the embedder.
 
 ## 3. Search with no database
 
-Script: `scripts/03_embed_chunks_memory.py`
+Script: `scripts/search_in_memory.py`
 
 ```powershell
-.\venv\Scripts\python.exe scripts\03_embed_chunks_memory.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\search_in_memory.py --folder sample-notes
 ```
 
 A complete semantic search engine with no database in it. The store is a list of
@@ -448,10 +448,10 @@ code stayed identical is itself the argument for getting a fixed dataset in plac
 
 ## 4. The vector database
 
-Code: `src/store.py`, `scripts/04_ingest.py`
+Code: `src/store.py`, `scripts/ingest.py`
 
 ```powershell
-.\venv\Scripts\python.exe scripts\04_ingest.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\ingest.py --folder sample-notes
 ```
 
 ### Installation problem, and why the version changed
@@ -637,10 +637,10 @@ scaling difference is real but not observable at 159 chunks.
 
 ## 5. Retrieval and tuning top-k
 
-Code: `src/retriever.py`, `scripts/05_retrieve.py`
+Code: `src/retriever.py`, `scripts/retrieve.py`
 
 ```powershell
-.\venv\Scripts\python.exe scripts\05_retrieve.py
+.\venv\Scripts\python.exe scripts\retrieve.py
 ```
 
 The retriever does three things, and each one is a place the pipeline could go
@@ -756,7 +756,7 @@ number above is a proxy for it.
 
 ### Retrieval logging
 
-Code: `src/retrieval_log.py`. Every question run through `05_retrieve.py` appends
+Code: `src/retrieval_log.py`. Every question run through `retrieve.py` appends
 to `logs/retrieval.log` (gitignored — review material, not a deliverable).
 
 Verified: 5 entries, 45 lines, 4,594 bytes. Each entry records
@@ -809,11 +809,11 @@ Deadline still to be confirmed with mentor.
 
 ## 7. Grounded generation
 
-Code: `src/generator.py`, `scripts/06_ask.py`
+Code: `src/generator.py`, `scripts/ask.py`
 
 ```powershell
-.\venv\Scripts\python.exe scripts\06_ask.py --question "why does chunk overlap matter?"
-.\venv\Scripts\python.exe scripts\06_ask.py --question "..." --show-prompt
+.\venv\Scripts\python.exe scripts\ask.py --question "why does chunk overlap matter?"
+.\venv\Scripts\python.exe scripts\ask.py --question "..." --show-prompt
 ```
 
 ### No new API key needed

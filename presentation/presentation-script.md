@@ -386,7 +386,7 @@ topic sharply. Cutting it into pieces means each piece keeps its own meaning.
 
 Three sentences that rescue most situations:
 
-- *"Let me show you"* — then run `scripts\05_retrieve.py --question "..."` live.
+- *"Let me show you"* — then run `scripts\retrieve.py --question "..."` live.
 - *"I measured that, let me find the number"* — it's in `notes/learning-log.md`
   or `notes/learning-log.md`.
 - *"I don't know yet, that's week three"* — true for anything about answer quality,
@@ -404,13 +404,13 @@ Then one at a time:
 
 ```powershell
 # embeddings: 384 numbers, and the 0.617 vs 0.031 result   (~20s)
-.\venv\Scripts\python.exe scripts\01_embedding_basics.py
+.\venv\Scripts\python.exe scripts\embeddings.py
 
 # chunking: the fact lost at a boundary is in Part 3       (~15s)
-.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder .kiro
+.\venv\Scripts\python.exe scripts\chunking.py --folder .kiro
 
 # a live question - best moment, because it is unrehearsed  (~5s)
-.\venv\Scripts\python.exe scripts\05_retrieve.py --question "why does chunk overlap matter?"
+.\venv\Scripts\python.exe scripts\retrieve.py --question "why does chunk overlap matter?"
 ```
 
 `--folder .kiro` is there because `sample-notes/` is still empty. Say that out

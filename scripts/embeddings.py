@@ -2,7 +2,7 @@
 Stage 1 - Embeddings: turn text into numbers that can be compared.
 
 Run it:
-    python scripts/01_embedding_basics.py
+    python scripts/embeddings.py
 
 What this script demonstrates, in order:
   1. A sentence becomes a fixed-length list of numbers.

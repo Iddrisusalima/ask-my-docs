@@ -224,12 +224,12 @@ the compliant response — which is what makes Requirement 8.4 achievable.
 
 | Script | Week | Shows |
 | ------ | ---- | ----- |
-| `01_embedding_basics.py` | 1 Mon–Tue | one sentence → 384 numbers; similar vs unrelated cosine scores |
-| `02_chunking_demo.py` | 1 Wed–Thu | the same document under different size/overlap settings |
-| `03_embed_chunks_memory.py` | 1 Fri | every chunk embedded, held in a plain list, searched by hand |
-| `04_ingest.py` | 2 Mon–Tue | load → chunk → embed → index into Chroma |
-| `05_retrieve.py` | 2 Wed–Fri | a question → top-k chunks with scores; top-k comparison; logging |
-| `06_ask.py` | 3 | the full pipeline: question → answer → citations |
+| `embeddings.py` | 1 Mon–Tue | one sentence → 384 numbers; similar vs unrelated cosine scores |
+| `chunking.py` | 1 Wed–Thu | the same document under different size/overlap settings |
+| `search_in_memory.py` | 1 Fri | every chunk embedded, held in a plain list, searched by hand |
+| `ingest.py` | 2 Mon–Tue | load → chunk → embed → index into Chroma |
+| `retrieve.py` | 2 Wed–Fri | a question → top-k chunks with scores; top-k comparison; logging |
+| `ask.py` | 3 | the full pipeline: question → answer → citations |
 
 Week 1 Friday deliberately builds search over a plain Python list before Chroma
 arrives on Monday. Doing the linear scan by hand first is what makes the
@@ -283,7 +283,7 @@ layer, one whitespace-only chunk. Collected, warned about by name, skipped. One
 bad file must not abort an otherwise good ingestion run.
 
 **Runtime errors** — API call failure, empty collection. Reported with the next
-action to take: "run `python scripts/04_ingest.py` first" rather than a
+action to take: "run `python scripts/ingest.py` first" rather than a
 `NoneType` traceback.
 
 Scripts catch these at the boundary and return a non-zero exit code with a clean
@@ -334,7 +334,7 @@ compact way to attribute each claim.
 | Retrieved chunks look random | query embedded with a different model than the index | Requirement 5.5 model-mismatch check on the collection |
 | Answer ignores the notes | context buried in a weak prompt, or top-k too high and diluted | print the assembled prompt (8.6); lower top-k |
 | Answer invented, notes silent on the topic | prompt gave the model no acceptable refusal | explicit "say so plainly" instruction (8.4) plus `MIN_SCORE` floor |
-| A fact is never retrievable | it straddles a chunk boundary | overlap; confirm by locating the fact in `02_chunking_demo.py` output |
+| A fact is never retrievable | it straddles a chunk boundary | overlap; confirm by locating the fact in `chunking.py` output |
 | Citations point at the wrong passage | chunks reordered, or cited chunks not the ones that fit the budget | `build_prompt` returns the fitted chunks it actually used |
 | Scanned PDF contributes nothing | no text layer, OCR out of scope | warn by name at load time (3.4) |
 | Model download stalls | connection drops; 10 s HF read timeout too short | `HF_HUB_DOWNLOAD_TIMEOUT=120`, background download, poll cache size |

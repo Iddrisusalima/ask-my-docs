@@ -97,13 +97,13 @@ collection.
 
 ```powershell
 # Week 1 Mon-Tue: embeddings and cosine similarity demo
-.\venv\Scripts\python.exe scripts\01_embedding_basics.py
+.\venv\Scripts\python.exe scripts\embeddings.py
 
 # Week 1 Wed-Thu: chunking pipeline, boundary demo, size/overlap sweep
-.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder sample-notes
+.\venv\Scripts\python.exe scripts\chunking.py --folder sample-notes
 
 # one configuration only, for a quick check
-.\venv\Scripts\python.exe scripts\02_chunking_demo.py --folder sample-notes --chunk-size 800 --overlap 160
+.\venv\Scripts\python.exe scripts\chunking.py --folder sample-notes --chunk-size 800 --overlap 160
 ```
 
 ## Console encoding

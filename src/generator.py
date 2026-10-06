@@ -263,7 +263,7 @@ def _build_client():
             "Add a key, or point OPENAI_BASE_URL at an OpenAI-compatible endpoint "
             "such as Groq or a local Ollama server.\n"
             "To inspect the prompt without calling any model, run:\n"
-            "  python scripts/06_ask.py --question \"...\" --show-prompt"
+            "  python scripts/ask.py --question \"...\" --show-prompt"
         )
 
     if base_url:

@@ -2,8 +2,8 @@
 Stage 4 - Storage: index the chunks into a real vector database.
 
 Run it:
-    python scripts/04_ingest.py --folder sample-notes
-    python scripts/04_ingest.py --folder sample-notes --chunk-size 800 --overlap 160
+    python scripts/ingest.py --folder sample-notes
+    python scripts/ingest.py --folder sample-notes --chunk-size 800 --overlap 160
 
 This is the ingestion half of the pipeline, and it runs once per change to the
 notes folder:

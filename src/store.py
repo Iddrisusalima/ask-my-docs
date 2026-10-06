@@ -211,7 +211,7 @@ class VectorStore:
             raise VectorStoreError(
                 f"The '{self.collection_name}' collection is empty - nothing has been indexed yet.\n"
                 "Run ingestion first:\n"
-                "  python scripts/04_ingest.py --folder sample-notes"
+                "  python scripts/ingest.py --folder sample-notes"
             )
 
         # Requesting more than exists is an error in Chroma, so clamp it.
@@ -272,7 +272,7 @@ class VectorStore:
                 "Embeddings from different models are not comparable - results would look "
                 "plausible and mean nothing.\n"
                 "Re-index with the current model:\n"
-                "  python scripts/04_ingest.py --folder sample-notes"
+                "  python scripts/ingest.py --folder sample-notes"
             )
 
     # ------------------------------------------------------------------
@@ -296,7 +296,7 @@ class VectorStore:
             raise VectorStoreError(
                 f"No '{self.collection_name}' collection found in {self.path.resolve()}.\n"
                 "Run ingestion first:\n"
-                "  python scripts/04_ingest.py --folder sample-notes"
+                "  python scripts/ingest.py --folder sample-notes"
             ) from exc
 
         return self._collection
