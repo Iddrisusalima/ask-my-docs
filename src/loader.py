@@ -35,7 +35,7 @@ class LoadedDocument:
     """One unit of text pulled off disk, with enough context to cite it later.
 
     Attributes:
-        source: Filename as it will appear in a citation, e.g. "week1-notes.md".
+        source: Filename as it will appear in a citation, e.g. "notes.md".
             Deliberately not the full path - absolute paths in citations are
             noise, and they leak the directory layout of the author's machine.
         path: Full path on disk, kept for debugging.

@@ -199,7 +199,7 @@ in `notes/`.
 
 | setting | value | reasoning |
 | ------- | ----- | --------- |
-| `CHUNK_SIZE` | 350 | Week 1 chose 500 from chunk-count statistics. Week 3 tested real answer quality and changed it — see below. |
+| `CHUNK_SIZE` | 350 | First set to 500 from chunk-count statistics, then changed after testing real answer quality — see below. |
 | `CHUNK_OVERLAP` | 70 | 20% of chunk size. Overlap is what stops a fact being lost when a cut lands mid-sentence. |
 | `TOP_K` | 5 | k=3 pulled from too few documents; k=10 cost 3.4x the context for a 0.06 drop in mean relevance and wasted ~3 of 10 slots on overlapping neighbours. |
 | `MIN_SCORE` | unset | A floor high enough to reject an unanswerable question also stripped real answers from weaker questions. The prompt handles refusal instead. |

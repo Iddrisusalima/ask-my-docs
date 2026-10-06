@@ -1,5 +1,5 @@
 """
-Week 2, Wed-Thu: Retrieval, and choosing top-k by measuring rather than guessing.
+Stage 5 - Retrieval: choosing top-k by measuring rather than guessing.
 
 Run it:
     python scripts/05_retrieve.py
@@ -166,7 +166,7 @@ def part_2_top_k_tradeoff(retriever: Retriever, questions: list[str]) -> list[di
         "  mean score    — average quality of what gets sent to the model\n"
         "  worst         — the weakest chunk included, i.e. the noise floor\n"
         "  marginal      — how far mean quality fell relative to k=3\n"
-        "  context chars — prompt cost, and Week 3's character budget\n"
+        "  context chars — prompt cost, and the generation character budget\n"
         "  dup pairs     — neighbouring chunks both returned, so overlapping text sent twice"
     )
 
@@ -241,10 +241,10 @@ def part_4_the_floor(retriever: Retriever, questions: list[str], top_k: int) -> 
         "whose wording closely matches how the notes are written scores high throughout;\n"
         "one phrased differently scores low throughout, even when its top hit is exactly\n"
         "right. So an absolute cutoff is comparing numbers that were never on a common\n"
-        "scale - the same mistake Week 1 Monday warned about, resurfacing.\n"
+        "scale - the same mistake the first similarity test warned about, resurfacing.\n"
         "\nSo min_score defaults to off. A wrong floor silently discards correct answers,\n"
         "which is worse than passing marginal context to a model that has been told it\n"
-        "may refuse. Week 3 leans on the prompt as the primary defence, with the floor\n"
+        "may refuse. Generation leans on the prompt as the primary defence, with the floor\n"
         "as a backstop. A relative test - such as requiring the best hit to stand clear\n"
         "of the rest - would likely work better than an absolute one, and is worth\n"
         "trying if time allows."
@@ -274,7 +274,7 @@ def part_5_decide(rows: list[dict]) -> None:
         "  1. Read the Part 1 previews and judge relevance yourself. The scores say\n"
         "     chunks are close in meaning; only you can say whether they answer the\n"
         "     question.\n"
-        "  2. Set TOP_K in .env and record the reasoning in notes/week2-learning-log.md,\n"
+        "  2. Set TOP_K in .env and record the reasoning in notes/learning-log.md,\n"
         "     citing the Part 2 table. 'Why 5 and not 10?' needs a real answer.\n"
         "  3. Re-run all of this against your own notes. These numbers describe an\n"
         "     interim corpus.\n"
@@ -357,7 +357,7 @@ def main() -> int:
     if log is not None:
         print(f"Retrieval results appended to {log.path} ({log.entry_count()} entries total).")
         print("That directory is gitignored - it is review material, not a deliverable.")
-    print("Next: Week 3, feeding retrieved chunks to a model and citing them.")
+    print("Next: feeding retrieved chunks to a model and citing them.")
     print()
     return 0
 

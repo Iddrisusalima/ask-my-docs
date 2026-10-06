@@ -10,7 +10,7 @@ wrong produces no error - just confident nonsense. `retrieve` checks the
 collection's recorded model before doing anything else.
 
 **2. Distance becomes similarity, exactly once, here.** Chroma speaks distance
-(lower is better). Week 1 taught similarity (higher is better). Both conventions
+(lower is better). The hand-written similarity used the opposite convention, where
 are defensible; having both alive in one codebase is not. The conversion happens
 at this boundary so that every number anything downstream ever sees points the
 same way.
@@ -24,15 +24,15 @@ no difference between "here is the passage that answers you" and "here are the k
 least irrelevant things I have" - and the language model downstream cannot tell
 either. `min_score` is what makes the distinction representable.
 
-A caution on that floor, measured in Week 1 Friday rather than assumed: against a
+A caution on that floor, measured rather than assumed: against a
 real corpus an unanswerable question scored 0.3386, while the weakest genuinely
-useful result scored 0.3655. A gap of 0.027. Week 1 Monday's tidy
+useful result scored 0.3655. A gap of 0.027. The first similarity test's tidy
 0.617-versus-0.031 separation came from sentences chosen to be unrelated; once a
 few hundred chunks are in play, something is always somewhat close to anything.
 
 So the floor defaults to **off**. A wrong threshold silently discards correct
 answers, which is worse than passing marginal context to a model that has been
-told it may refuse. Week 3 uses both defences together.
+told it may refuse. Generation uses both defences together.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ DEFAULT_TOP_K = 5
 
 @dataclass(frozen=True)
 class RetrievedChunk:
-    """A chunk with its relevance score, on Week 1's scale.
+    """A chunk with its relevance score, on the cosine similarity scale.
 
     Attributes:
         chunk: The passage and its provenance.

@@ -15,7 +15,7 @@ Two things worth internalising:
    paragraphs, `all-MiniLM-L6-v2` always returns 384 numbers. That fixed shape
    is exactly what makes the numbers comparable, and it's also why very long
    inputs lose detail - everything gets squeezed into the same budget. That is
-   the real reason we chunk documents (Week 1, Wed-Thu).
+   the real reason we chunk documents, covered by the chunking stage.
 
 2. The numbers are only meaningful relative to other numbers from *the same
    model*. You cannot compare a MiniLM embedding to an OpenAI embedding. If you

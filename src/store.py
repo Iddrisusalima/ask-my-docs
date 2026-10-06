@@ -1,7 +1,7 @@
 """
 Storing embedded chunks in Chroma, a real vector database.
 
-What changes from Week 1
+What changes from the in-memory store
 -----------------------
 Friday's store was a Python list and the search was a `for` loop comparing the
 question against every chunk. That was *exact*: it looked at everything, so it
@@ -29,11 +29,11 @@ Two decisions in this module that are easy to get wrong
 1. **Cosine space must be set explicitly.** Chroma's default is squared L2. On
    this corpus a query against perpendicular unit vectors returns distance 2.0
    under the default and 1.0 under cosine - different numbers and, for
-   non-normalised embeddings, a different *ranking*. Week 1 taught cosine
+   non-normalised embeddings, a different *ranking*. This project uses cosine
    similarity, so cosine is what we configure.
 
 2. **We pass in our own embeddings.** Chroma will happily embed text for you,
-   which would hide the stage Week 1 was spent building. `src/embedder.py`
+   which would hide the stage that was built by hand earlier. `src/embedder.py`
    stays in charge; this module only stores what it produces.
 """
 
@@ -64,7 +64,7 @@ class StoredMatch:
     """A chunk returned by the database, still expressed as a *distance*.
 
     Distance, not similarity, on purpose. Chroma speaks distance (lower is
-    better) and Week 1 taught similarity (higher is better). Converting in one
+    better) and the rest of this project uses similarity (higher is better). Converting in one
     place - `src/retriever.py` - means every score the user ever sees points the
     same way. Mixing the two conventions is a reliable source of confusion, so
     the raw form is kept only as far as this boundary.

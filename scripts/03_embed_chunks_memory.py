@@ -1,5 +1,5 @@
 """
-Week 1, Fri: Embed every chunk, keep it in memory, and search it by hand.
+Stage 3 - Search by hand: embed every chunk into a list and search it with a loop.
 
 Run it:
     python scripts/03_embed_chunks_memory.py
@@ -260,7 +260,7 @@ def part_3_no_good_answer(
                 "\n  So a floor does separate them here, but only barely. That is a much\n"
                 "  narrower gap than Monday's 0.617-versus-0.031 suggested, and it is not\n"
                 "  a number to hardcode confidently off one corpus and four questions.\n"
-                "  Week 2 should widen this test before Week 3 depends on it."
+                "  This test should be widened before generation depends on it."
             )
 
     print(
@@ -268,7 +268,7 @@ def part_3_no_good_answer(
         "asks about Sundays, and the chunk contains a schedule full of dates and\n"
         "day names. The model is doing its job - those really are related in\n"
         "meaning. It has no concept of whether the relation answers the question.\n"
-        "\nThis is the failure Week 3 has to handle. Hand these chunks to a language\n"
+        "\nThis is the failure generation has to handle. Hand these chunks to a language\n"
         "model as context and it will dutifully attempt an answer from them. Monday's\n"
         "clean 0.03-versus-0.62 gap came from sentences chosen to be unrelated; a\n"
         "real corpus is messier, because with a few hundred chunks something will\n"
@@ -373,11 +373,11 @@ def part_5_why_a_database(
 
 
 def part_6_over_to_you() -> None:
-    rule("PART 6  The last Week 1 deliverable")
+    rule("PART 6  The remaining write-up")
 
     print(
         "Write 3-4 plain-language sentences on what semantic search means, in\n"
-        "notes/week1-learning-log.md. Plain language means a sentence your mentor\n"
+        "notes/learning-log.md. Plain language means a sentence your mentor\n"
         "could read aloud to someone who has never heard the word 'embedding'.\n"
         "\nThe raw material is all now measured:\n"
         "  - Monday: related sentences scored 0.617, unrelated 0.031, with almost\n"
@@ -432,7 +432,7 @@ def main() -> int:
     part_6_over_to_you()
 
     print(f"\n{'=' * 72}")
-    print("Week 1 complete once the write-up is done. Next: Chroma, Week 2 Monday.")
+    print("This stage is complete once the write-up is done. Next: Chroma.")
     print(f"{'=' * 72}\n")
     return 0
 

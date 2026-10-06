@@ -1,5 +1,5 @@
 """
-Week 1, Wed-Thu: Build and inspect the chunking pipeline.
+Stage 2 - Chunking: build and inspect the chunking pipeline.
 
 Run it:
     python scripts/02_chunking_demo.py
@@ -276,7 +276,7 @@ def part_6_over_to_you(results: list[dict]) -> None:
         "     you to explain this out loud.\n"
         "  3. Pick CHUNK_SIZE and CHUNK_OVERLAP and record why. You need an\n"
         "     answer to 'why 500 and not 1000?' that cites the table above.\n"
-        "     Nothing is final until Week 2 retrieval tests it against real\n"
+        "     Nothing is final until retrieval tests it against real\n"
         "     questions.\n"
     )
 

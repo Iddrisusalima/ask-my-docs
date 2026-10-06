@@ -25,7 +25,7 @@ will still produce something - it has no acceptable alternative. Told "if the
 context does not contain the answer, say so plainly", refusing becomes the
 compliant response.
 
-That matters because of what Week 2 measured. A question with no answer in the
+That matters because of what retrieval tuning measured. A question with no answer in the
 notes still scored 0.339, against 0.366 for the weakest genuine answer - a gap of
 0.027. No score threshold can separate those reliably, so the relevance floor
 ships switched off and this prompt carries the weight instead.

@@ -5,7 +5,7 @@ Why split at all?
 -----------------
 Two independent reasons, and they pull in the same direction:
 
-1. **Fixed-size embeddings.** Week 1 Mon-Tue showed that a 7-character input and
+1. **Fixed-size embeddings.** The embedding demo showed that a 7-character input and
    a 200-character input both come back as 384 numbers. Feed in a whole
    10,000-character document and it still gets 384 numbers. Everything it
    discusses is averaged into one position, so a document about five topics
@@ -63,7 +63,7 @@ class Chunk:
     """One retrievable passage, carrying everything needed to cite it.
 
     Attributes:
-        chunk_id: Readable identifier, e.g. "week1-notes.md#3". Deliberately not
+        chunk_id: Readable identifier, e.g. "notes.md#3". Deliberately not
             a UUID - this string is shown to the user in citations, and a human
             watching a demo should be able to tell where it came from.
         text: The passage itself.

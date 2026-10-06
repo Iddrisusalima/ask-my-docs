@@ -17,8 +17,8 @@ The three findings I would point at first:
 Sections marked **TO WRITE** are explanations I have to give in my own words.
 
 > Note on dates: the project brief lists the start as Sep 14 and the deadline as
-> Oct 4. Week 1 actually began Sep 21, so every week shifts forward by one:
-> Week 1 = Sep 21–27, Week 2 = Sep 28–Oct 4, Week 3 = Oct 5–11. Deadline to be
+> Oct 4. Work actually began Sep 21, so the schedule shifted forward by one
+> week throughout. Final deadline to be
 > confirmed with mentor.
 
 This file is where I write things in my own words. The brief asks for written
@@ -239,7 +239,7 @@ yet absorbed a whole unrelated table the way 1500 did. 100 of overlap rescued
 the planted fact in the boundary test. The 1.26x storage cost is irrelevant at
 this corpus size.
 
-This choice cannot be confirmed until Week 2, when real questions are run
+This choice cannot be confirmed until real questions are run
 against it. Retrieval quality is the only test that matters; every number above
 is a proxy.
 
@@ -397,7 +397,7 @@ always be somewhat close to anything you ask.
 Conclusion for later weeks: **a score floor is necessary but not sufficient.** The
 prompt itself has to give the model permission to refuse. Two independent
 defences, because neither is reliable alone. `MIN_SCORE` must not be hardcoded
-from this one measurement — Week 2 needs to widen the test first.
+from this one measurement — the test needs widening first.
 
 ### Part 4 — semantic versus keyword, on the same question
 
@@ -417,7 +417,7 @@ judging them, and this corpus is specification boilerplate rather than notes, so
 the comparison is muddier than it will be on real material. Re-run on my own
 notes, where I know what the right answer should be.
 
-### Week 1 status
+### Status at this point
 
 | deliverable | state |
 | ----------- | ----- |
@@ -435,7 +435,7 @@ notes, where I know what the right answer should be.
 
 `learning-log.md` for why).
 
-Same dataset caveat as Week 1: `sample-notes/` is still empty, so everything below
+Same dataset caveat as before: `sample-notes/` was still empty, so everything below
 was measured against this project's own `.kiro/` docs. Re-run after adding my own
 notes.
 
@@ -470,7 +470,7 @@ Studio build tools I do not have installed.
 Fixed by moving to **`chromadb==1.5.9`**. The 1.x line replaced that C++ binding
 with a Rust core and ships prebuilt wheels, so it installs with no compiler.
 Verified `numpy 2.1.3` and `sentence-transformers 3.3.1` still import cleanly
-afterwards — the upgrade did not break the Week 1 stack.
+afterwards — the upgrade did not break the existing stack.
 
 Worth remembering as a general lesson: the newest version is not automatically
 the right choice, but "this dependency needs a C++ toolchain" is a legitimate
@@ -486,7 +486,7 @@ directly with three unit vectors — identical, perpendicular, and opposite:
 | Chroma default (squared L2) | 0.0 | **2.0** | — |
 | cosine (configured) | 0.0 | **1.0** | 2.0 |
 
-Under cosine, `similarity = 1 - distance` recovers Week 1's scale exactly:
+Under cosine, `similarity = 1 - distance` recovers the hand-written scale exactly:
 1.0 for identical direction, 0.0 for perpendicular, -1.0 for opposite.
 
 So the collection is created with an explicit space:
@@ -539,7 +539,7 @@ _Content from the sources above was rephrased for compliance with licensing rest
 
 ### The key point, which is the same one Friday made
 
-**The index is approximate. My Week 1 `for` loop was exact.** A greedy graph walk
+**The index is approximate. My hand-written `for` loop was exact.** A greedy graph walk
 can settle into a local minimum and miss a true nearest neighbour that comparing
 everything would have found. Chroma is not more correct than the loop — it is
 less correct and vastly more scalable.
@@ -648,7 +648,7 @@ quietly wrong:
 
 1. Checks the collection was built by the model now doing the querying.
 2. Converts Chroma's *distance* into *similarity* — once, here — so every score
-   anything downstream sees means "higher is better", matching Week 1.
+   anything downstream sees means "higher is better", matching the hand-written version.
 3. Offers an optional `min_score` floor, so "nothing relevant" can be expressed
    at all.
 
@@ -722,11 +722,11 @@ confidence.
 worded the way my notes are written scores high on everything; one phrased
 differently scores low on everything, even when its top hit is exactly right. So
 an absolute cutoff compares numbers that were never on a common scale — the same
-mistake Week 1 Monday warned about, resurfacing in a new place.
+mistake the first similarity test warned about, resurfacing in a new place.
 
 **Decision: `min_score` defaults to off.** A wrong floor silently discards correct
 answers, which is worse than passing marginal context to a model that has been
-told it may refuse. Week 3 leans on the prompt as the primary defence.
+told it may refuse. Generation leans on the prompt as the primary defence.
 
 Worth trying if time allows: a *relative* test instead — require the best hit to
 stand clear of the rest by some margin. For the unanswerable control the spread
@@ -744,10 +744,10 @@ Reasoning from the table, so the choice is defensible:
   wastes nearly three of ten slots on duplicated neighbouring chunks. The ranks
   6–10 scores were bunched within 0.007 of each other, so they add noise rather
   than information.
-- **k=5** sits at 2,211 characters — a comfortable prompt size for Week 3 — with
+- **k=5** sits at 2,211 characters — a comfortable prompt size for generation — with
   3.2 sources and only 0.5 duplicate pairs.
 
-Still provisional. Answer quality in Week 3 is the only test that matters; every
+Still provisional. Answer quality is the only test that matters; every
 number above is a proxy for it.
 
 ---
@@ -867,7 +867,7 @@ Without that, a model handed irrelevant passages still produces something,
 because refusing is not an option it has been given. With it, refusing becomes
 the compliant response.
 
-This is the direct consequence of Week 2's measurement. A question with no answer
+This is the direct consequence of the retrieval measurement. A question with no answer
 scored 0.3386 while the weakest genuine answer scored 0.3655 — a gap of 0.027.
 No score threshold separates those reliably, so `MIN_SCORE` ships off and the
 prompt carries the weight.
@@ -894,7 +894,7 @@ there.
 
 **But 3 of 5 passages went unused**, and the script now reports that. If it keeps
 happening, top-k of 5 is higher than it needs to be. That is a measurement I
-could not have taken before this week: Week 2 could only count how many passages
+could not have taken earlier: retrieval tuning could only count how many passages
 *looked* relevant, not how many actually got used.
 
 ### The no-answer test — the self-check item
@@ -986,8 +986,9 @@ That is "...roughl**y 8x** more per token" with its opening sliced off into the
 previous chunk. The model received an incoherent fragment and refused. At top-k
 10 the clean statement still never appeared — no chunk contained it whole.
 
-**This is Week 1's boundary problem, resurfacing where it finally costs an
-answer.** In Week 1 I demonstrated it with a planted sentence in a test document.
+**This is the boundary problem from the chunking stage, resurfacing where it
+finally costs an answer.** Earlier I demonstrated it with a planted sentence in a
+test document.
 Here it happened by itself, on my real notes, and the symptom was not a missing
 chunk — it was a refusal that looked like the tool working correctly.
 
@@ -1012,7 +1013,7 @@ retrieval returned a passage about token counts and history resets instead.
 The cause is the opposite of failure 1. That section is only eight lines long. At
 900 characters it gets absorbed into a chunk dominated by surrounding material,
 and its meaning is diluted until it no longer matches a question about key
-safety. **That is the "large chunks dilute the match" tradeoff from Week 1,
+safety. **That is the "large chunks dilute the match" tradeoff from the chunking stage,
 biting in the other direction.**
 
 At 350/70 the section occupies a chunk of its own, and the tool answers:
@@ -1024,7 +1025,7 @@ Correct, though partial — it got one of four steps.
 
 ### The decision: chunk size 350, overlap 70
 
-Changed from the provisional 500/100 chosen in Week 1.
+Changed from the provisional 500/100 chosen during the chunking experiments.
 
 | setting | Q1 (token pricing) | Q8 (key safety) |
 | ------- | ------------------ | --------------- |
@@ -1037,7 +1038,7 @@ headings. Each heading introduces a distinct idea, and a 350-character chunk map
 roughly to one of those sections. At 900 characters a chunk spans several
 sections and its embedding becomes an average of unrelated ideas.
 
-**This is why the Week 1 choice had to stay provisional.** 500/100 was defensible
+**This is why that earlier choice had to stay provisional.** 500/100 was defensible
 from chunk-count statistics, which is all I had then. Answer quality on real
 notes is a different measurement and it pointed somewhere else. The brief said
 this iteration loop was normal and expected; it was.

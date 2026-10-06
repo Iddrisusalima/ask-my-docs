@@ -1,7 +1,7 @@
 """
 Cosine similarity, written by hand.
 
-We could import this from a library, but the whole point of Week 1 is
+We could import this from a library, but the whole point of this project is
 understanding *why* two pieces of text score as "similar". So we do the
 arithmetic ourselves.
 

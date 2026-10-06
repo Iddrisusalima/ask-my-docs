@@ -1,5 +1,5 @@
 """
-Week 2, Mon-Tue: Index the chunks into a real vector database.
+Stage 4 - Storage: index the chunks into a real vector database.
 
 Run it:
     python scripts/04_ingest.py --folder sample-notes
@@ -160,7 +160,7 @@ def main() -> int:
         print(
             "\n  space=cosine was set explicitly. Chroma's default is squared L2,\n"
             "  which would have reported distance 2.0 where cosine reports 1.0 -\n"
-            "  and ranked non-normalised embeddings differently from Week 1.\n"
+            "  and ranked non-normalised embeddings differently from the hand-written version.\n"
             "  ef_search is the speed/recall dial: higher explores more of the\n"
             "  graph per query, finds more true neighbours, and costs more time."
         )
@@ -264,7 +264,7 @@ def main() -> int:
 
     print(
         "\nNote the distance-to-similarity conversion above: cosine distance 0.0 means\n"
-        "identical direction, so similarity = 1 - distance puts these back on Week 1's\n"
+        "identical direction, so similarity = 1 - distance puts these back on the original\n"
         "scale where higher is better. src/retriever.py does this conversion once, on\n"
         "Wednesday, so nothing downstream has to remember which way round it is."
     )

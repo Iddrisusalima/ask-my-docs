@@ -1,5 +1,5 @@
 """
-Week 1, Mon-Tue: Understand & generate embeddings.
+Stage 1 - Embeddings: turn text into numbers that can be compared.
 
 Run it:
     python scripts/01_embedding_basics.py

@@ -1,5 +1,5 @@
 """
-Week 3: The full pipeline. A question in, a cited answer out.
+Stage 6 - Generation: the full pipeline. A question in, a cited answer out.
 
 Run it:
     python scripts/06_ask.py --question "why does overlap matter?"
