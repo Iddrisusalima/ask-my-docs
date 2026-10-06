@@ -1,0 +1,79 @@
+# The exact prompt sent to the model, printed without calling the API
+
+[ask] 317 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
+Q: what is a context window measured in?
+   retrieved 5 passage(s)
+   1. 0.6113  project1-learnings.md#12       d at that point you have to start dropping or
+   summarisi...
+   2. 0.5918  project1-build-log.md#105      in: 687 out: 6 total: 693 this turn: $0.000221
+   session ...
+   3. 0.5032  project1-build-log.md#72       rement. The model does not see text, it sees a
+   sequence...
+   4. 0.4511  project1-build-log.md#112      to remember. That is exactly what memory costs,
+   stated ...
+   5. 0.4267  project1-build-log.md#65       : actually $0.00) You: Now explain a context window
+   in ...
+==========================================================================
+SYSTEM PROMPT  (the instruction that keeps answers grounded)
+==========================================================================
+You answer questions about a specific person's personal notes.
+Rules you must follow:
+1. Answer using ONLY the numbered passages provided. Do not use anything you know
+   from outside them, even if you are confident it is correct.
+2. Cite the passages you used, by their numbers, like [1] or [2][3]. Cite only
+   passages that genuinely support what you wrote.
+3. If the passages do not contain the answer, say so plainly - for example:
+   "I can't find the answer to that in your notes." Do not guess, do not fill
+   gaps from general knowledge, and do not apologise at length.
+4. If the passages only partly answer the question, give the part they support
+   and say explicitly what is missing.
+5. Keep the answer short. Two or three sentences is usually right.
+The passages come from the user's own notes, so the facts in them take priority
+over anything you believe to be true in general.
+==========================================================================
+USER PROMPT  (exactly what the model would receive)
+==========================================================================
+PASSAGES FROM THE USER'S NOTES:
+[1] (from project1-learnings.md#12)
+d at that point you have to
+start dropping or summarising old turns.
+The window is not the model's memory. It is the size of the desk you are allowed to
+spread your papers on.
+Interestingly, my own tool explained this back to me correctly during testing:
+> A context window is the maximum amount of text—measured in tokens—that an AI
+> model can
+[2] (from project1-build-log.md#105)
+in: 687  out: 6   total: 693
+  this turn: $0.000221   session so far: $0.003455  (7,248 tokens)
+You: what is a context window
+Bot: A context window is the maximum amount of text—measured in tokens—that an
+     AI model can read, remember, and process at one time.
+[3] (from project1-build-log.md#72)
+rement. The model
+does not see text, it sees a sequence of token IDs. So tokens are simultaneously
+what the context window is measured in, and what I am billed for in both
+directions.
+## In my own words: why do longer conversations cost more?
+Because memory is resending.
+[4] (from project1-build-log.md#112)
+to remember. That is exactly what memory
+costs, stated as a number.
+Session total for the whole conversation: 9,707 tokens, $0.004507 at paid rates
+(and $0.00 actual, on the free tier).
+### A nice accident
+On turn 20 the bot correctly explained context windows as text measured in tokens
+that the model can process at once, adding that once a
+[5] (from project1-build-log.md#65)
+: actually $0.00)
+You: Now explain a context window in one sentence.
+  [turn 3]  history: 6 messages  |  tokens  in: 106  out: 28  total: 134
+  cost this turn: $0.000102  (free tier: actually $0.00)
+You: What is my name?
+  [turn 4]  history: 8 messages  |  tokens  in: 141  out: 6   total: 147
+  cost this turn: $0.000057  (free tier: actually
+---
+QUESTION: what is a context window measured in?
+ANSWER (cite passages by number):
+--------------------------------------------------------------------------
+5 passage(s) included, 0 omitted, 1,887 characters.
+Nothing was sent anywhere. Drop --show-prompt to get a real answer.

@@ -1,0 +1,29 @@
+# A question the notes cannot answer - the tool declines instead of inventing
+
+[ask] 317 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
+Q: What is the capital of Peru?
+   retrieved 5 passage(s)
+   1. 0.1659  project1-overview.md#40        de costs nothing. --- ## Installation ### 1. Clone
+   the ...
+   2. 0.1564  project1-blog-post.md#18
+   Iddrisusalima/prompt-lab/main/docs/screenshots/memory-a...
+   3. 0.1492  project1-overview.md#48        s are handled locally and never reach the API, so
+   they ...
+   4. 0.1477  project1-overview.md#24        `list[types.Content]`) — the bot's entire memory,
+   held ...
+   5. 0.1477  project1-build-log.md#43       e, asked **three** unrelated questions, then asked
+   for ...
+==========================================================================
+ANSWER
+==========================================================================
+I can't find the answer to that in your notes.
+SOURCES
+  [1]   -    0.1659  project1-overview.md#40
+  [2]   -    0.1564  project1-blog-post.md#18
+  [3]   -    0.1492  project1-overview.md#48
+  [4]   -    0.1477  project1-overview.md#24
+  [5]   -    0.1477  project1-build-log.md#43
+  The model cited nothing. Either it could not answer from these
+  passages, or it ignored the instruction to cite. Check the answer
+  text above before trusting it.
+  model: gemini-3.5-flash-lite

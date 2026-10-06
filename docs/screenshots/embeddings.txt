@@ -1,0 +1,75 @@
+# Related sentences score far above unrelated ones
+
+Backend: local:sentence-transformers/all-MiniLM-L6-v2
+====================================================================
+PART 1  One sentence -> one vector
+====================================================================
+Sentence: "Embeddings turn the meaning of text into numbers."
+Characters in:     49
+Numbers out:       384   <- this is the dimensionality
+First 8 numbers:   [0.0326, 0.0224, 0.0198, -0.0172, -0.0318, 0.08, 0.002, 0.0204]
+Vector magnitude:  1.0000
+None of those individual numbers means anything you could name.
+Only their position relative to other vectors carries information.
+====================================================================
+PART 2  Input length changes nothing about output length
+====================================================================
+  chars in |  numbers out
+-----------+-------------
+         7 |          384
+        30 |          384
+       196 |          384
+Same budget of numbers for 7 characters and 200+. A long document
+therefore gets *averaged out* into that same fixed space, blurring the
+detail. That is precisely why we split documents into chunks before
+embedding them (coming up Wed-Thu).
+====================================================================
+PART 3  Similar sentences vs unrelated sentences
+====================================================================
+GROUP A - all about weekend baking:
+  A1. I bake sourdough bread every weekend.
+  A2. Most Saturdays you will find me making a loaf from scratch.
+  A3. Weekend baking is my favourite hobby.
+GROUP B - unrelated to each other and to baking:
+  B1. The tax filing deadline falls in April.
+  B2. Saturn has dozens of confirmed moons.
+  B3. Please reboot the router before calling support.
+--- Within GROUP A (expect HIGH) ---
+  A1 vs A2:  0.6178
+  A1 vs A3:  0.6082
+  A2 vs A3:  0.6254
+--- Within GROUP B (expect LOW) ---
+  B1 vs B2:  -0.0190
+  B1 vs B3:  0.1112
+  B2 vs B3:  0.0009
+Average within GROUP A:  0.6172
+Average within GROUP B:  0.0310
+Gap:                     0.5861
+====================================================================
+PART 4  Everything against everything
+====================================================================
+           A1      A2      A3      B1      B2      B3
+   A1   1.000   0.618   0.608   0.047   0.063   0.041
+   A2   0.618   1.000   0.625   0.047  -0.058   0.014
+   A3   0.608   0.625   1.000   0.055   0.043  -0.008
+   B1   0.047   0.047   0.055   1.000  -0.019   0.111
+   B2   0.063  -0.058   0.043  -0.019   1.000   0.001
+   B3   0.041   0.014  -0.008   0.111   0.001   1.000
+How to read it: the diagonal is 1.000 (every sentence is identical to
+itself). The top-left 3x3 block is the A group agreeing with itself.
+The bottom-left block is A vs B - the lowest numbers on the grid.
+====================================================================
+PART 5  Why this matters
+====================================================================
+Related sentences scored 0.617 on average.
+Unrelated ones scored 0.031.
+The model was never told these sentences were about baking. It has
+no keyword list. It placed them near each other purely from meaning,
+and that ordering is what the rest of this project stands on:
+  chunk -> embed -> store -> RETRIEVE BY SIMILARITY -> generate
+One caveat to remember: these scores are only comparable to each other.
+0.62 is not universally 'quite similar' - it depends on the model. Judge
+candidates by their ranking against each other, never by a fixed cutoff.
+====================================================================
+Done. Next: Wed-Thu, splitting real documents into chunks.
+====================================================================

@@ -1,0 +1,93 @@
+# Ingestion: load, chunk, embed, index
+
+========================================================================
+STEP 1  Load
+========================================================================
+[loader] C:\Users\hp\Desktop\ASK-MY-DOCS\sample-notes
+[loader] 5 file(s) found -> 5 document(s) (0 PDF page(s)), 79,581 characters
+5 file(s) -> 5 document(s)
+========================================================================
+STEP 2  Chunk
+========================================================================
+chunk_size=350, overlap=70 -> 317 chunks, mean 319.9 chars (min 162, max 350)
+========================================================================
+STEP 3  Embed
+========================================================================
+model:      local:sentence-transformers/all-MiniLM-L6-v2
+dimensions: 384
+embedded:   317 chunks in 38.28s (120.7ms each)
+========================================================================
+STEP 4  Index into Chroma
+========================================================================
+collection already holds 317 chunks - rebuilding from scratch
+indexed:    317 chunks in 0.68s
+database:   C:\Users\hp\Desktop\ASK-MY-DOCS\chroma_db
+collection: notes
+HNSW settings Chroma is using:
+  space            cosine
+  ef_construction  100
+  ef_search        100
+  max_neighbors    16
+  space=cosine was set explicitly. Chroma's default is squared L2,
+  which would have reported distance 2.0 where cosine reports 1.0 -
+  and ranked non-normalised embeddings differently from the hand-written version.
+  ef_search is the speed/recall dial: higher explores more of the
+  graph per query, finds more true neighbours, and costs more time.
+========================================================================
+STEP 5  Confirm it persisted
+========================================================================
+reopened from disk: 317 chunks
+recorded model:     local:sentence-transformers/all-MiniLM-L6-v2
+Friday's store was a Python list and vanished when the process exited.
+Every question meant re-embedding the whole corpus first - 30 seconds
+before answering anything. This survives restarts, so that cost is now
+paid once per change to the notes instead of once per run.
+========================================================================
+STEP 6  The model-mismatch guard
+========================================================================
+matching model (local:sentence-transformers/all-MiniLM-L6-v2): passes
+mismatched model (openai:text-embedding-3-small): correctly rejected
+This is the pipeline's nastiest silent failure. Querying an index built
+by a different model raises nothing on its own - it returns confident,
+well-formed, meaningless results. Recording the model on the collection
+turns that silence into an error message.
+========================================================================
+STEP 7  Approximate index vs exact scan
+========================================================================
+Q: Why does overlap between chunks matter?
+   Chroma HNSW :    4.4ms
+   exact scan  :   35.1ms
+   agreement   : 5/5 of the top-5
+   rank  chunk (Chroma)                  distance  similarity
+   1     project1-build-log.md#116         0.6269      0.3731
+   2     project1-build-log.md#117         0.6633      0.3367
+   3     project1-blog-post.md#17          0.7343      0.2657
+   4     project1-build-log.md#115         0.7510      0.2490
+   5     project1-blog-post.md#23          0.7512      0.2488
+Q: How should I choose how many results to retrieve?
+   Chroma HNSW :    5.6ms
+   exact scan  :   35.9ms
+   agreement   : 5/5 of the top-5
+   rank  chunk (Chroma)                  distance  similarity
+   1     project1-build-log.md#57          0.7306      0.2694
+   2     project1-build-log.md#48          0.7392      0.2608
+   3     project1-build-log.md#23          0.7400      0.2600
+   4     project1-build-log.md#56          0.7461      0.2539
+   5     project1-build-log.md#9           0.7534      0.2466
+Overall agreement with the exact scan: 10/10 (100%)
+100% at this corpus size, which is expected rather than reassuring. With
+only a few hundred chunks the HNSW graph is small enough that a greedy
+walk reaches the true nearest neighbours anyway. The approximation only
+starts costing recall when the graph is large enough that the walk has
+to skip meaningful portions of it. So this measurement confirms the
+index is wired up correctly - it does not demonstrate that approximate
+search is free.
+Note the distance-to-similarity conversion above: cosine distance 0.0 means
+identical direction, so similarity = 1 - distance puts these back on the original
+scale where higher is better. src/retriever.py does this conversion once, on
+Wednesday, so nothing downstream has to remember which way round it is.
+========================================================================
+Done
+========================================================================
+317 chunks indexed and queryable.
+Next: Wed-Thu, the retrieval function and tuning top-k.

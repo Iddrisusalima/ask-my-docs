@@ -127,7 +127,7 @@ reported by name and skipped, since OCR is out of scope.
 
 ## Example
 
-![A real question, its answer, and the cited sources](docs/example-answer.png)
+![A real question, its answer, and the cited sources](docs/screenshots/answer-with-citations.png)
 
 The same session as text:
 
@@ -179,18 +179,32 @@ for judging relevance.
 
 ### When the notes do not contain the answer
 
-```
-Q: What is the capital of Peru?
-   retrieved 5 passage(s)
-
-ANSWER
-I can't find the answer to that in your notes.
-```
+![A question the notes cannot answer, declined rather than invented](docs/screenshots/refusal.png)
 
 This is the behaviour worth testing first on any RAG tool. The model certainly
 knows the capital of Peru — it refuses because the answer is not in the retrieved
-passages. Verified separately with "how do I fix a leaking radiator?", which also
-refuses.
+passages. Note the scores: nothing clears 0.17, and no passage is cited.
+Verified separately with "how do I fix a leaking radiator?", which also refuses.
+
+### More screenshots
+
+`docs/screenshots/` holds five generated sessions, each with the transcript it
+was drawn from:
+
+| image | shows |
+| ----- | ----- |
+| `answer-with-citations.png` | a question answered from the notes, with sources |
+| `refusal.png` | a question the notes cannot answer |
+| `grounding-prompt.png` | the exact prompt sent to the model |
+| `ingestion.png` | load, chunk, embed, index |
+| `embeddings.png` | related sentences scoring far above unrelated ones |
+
+Regenerate them all after any retuning, so no figure goes stale:
+
+```powershell
+.\venv\Scripts\python.exe -m pip install pillow
+.\venv\Scripts\python.exe presentation\render_terminal.py
+```
 
 ---
 
