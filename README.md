@@ -127,7 +127,9 @@ reported by name and skipped, since OCR is out of scope.
 
 ## Example
 
-Real output, unedited:
+![A real question, its answer, and the cited sources](docs/example-answer.png)
+
+The same session as text:
 
 ```
 $ .\venv\Scripts\python.exe scripts\ask.py --question "what is the difference between training and inference?"
