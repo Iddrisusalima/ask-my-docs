@@ -45,7 +45,30 @@ flowchart TD
 
     E -. "similarity search" .-> R
     R -. "logged" .-> LOG["logs/retrieval.log"]
+
+    classDef source fill:#dbeafe,stroke:#1e40af,stroke-width:2px,color:#0f172a
+    classDef plain fill:#ffffff,stroke:#475569,stroke-width:1.5px,color:#0f172a
+    classDef embed fill:#d1fae5,stroke:#047857,stroke-width:2px,color:#0f172a
+    classDef db fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
+    classDef out fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#0f172a
+    classDef aside fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+
+    class A,Q source
+    class B,C,R,G plain
+    class D,QE embed
+    class E db
+    class L aside
+    class OUT out
+    class LOG aside
 ```
+
+The two halves meet at the store. **The embedding model appears on both sides and
+must be the same one** — embeddings from different models are not comparable, and
+comparing them raises no error, it just returns confident nonsense. The store
+records which model built it and refuses a mismatch.
+
+An editable [draw.io](https://app.diagrams.net) version of the same diagram is at
+[`docs/architecture.drawio`](docs/architecture.drawio).
 
 Ingestion runs once, when the notes change. The query side runs per question. The
 embedding model appears on both sides and **must be the same one** — embeddings
