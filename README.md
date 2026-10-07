@@ -357,10 +357,20 @@ No RAG framework. That was the point.
 
 ---
 
-## Licence
+## Documentation
 
-[MIT](LICENSE) — free to use, modify and distribute, with attribution and no
-warranty.
+| Document | Contents |
+| -------- | -------- |
+| [`notes/learning-log.md`](notes/learning-log.md) | Every measurement behind the project, by pipeline stage: similarity scores, the chunk-size experiments, top-k tuning, the relevance-floor finding, and the ten-question quality test. Includes what I got wrong and had to change. |
+| [`docs/screenshots/`](docs/screenshots) | Generated terminal sessions, each with the transcript it was drawn from. |
+| [`.kiro/specs/ask-my-docs/`](.kiro/specs/ask-my-docs) | Requirements, design and task breakdown, written before the code. |
+| [`presentation/`](presentation) | Review deck and the speaking script behind it. |
 
-The documents in `sample-notes/` are my own write-ups from a previous project,
-included so the tool can be run without supplying your own.
+The documents in [`sample-notes/`](sample-notes) are my own write-ups from a
+previous project, committed so the tool can be run without supplying your own.
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
