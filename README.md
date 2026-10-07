@@ -354,3 +354,13 @@ numpy · [openai](https://github.com/openai/openai-python) client against
 [Gemini's OpenAI-compatible endpoint](https://ai.google.dev/gemini-api/docs/openai)
 
 No RAG framework. That was the point.
+
+---
+
+## Licence
+
+[MIT](LICENSE) — free to use, modify and distribute, with attribution and no
+warranty.
+
+The documents in `sample-notes/` are my own write-ups from a previous project,
+included so the tool can be run without supplying your own.
