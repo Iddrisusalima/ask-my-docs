@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  compile:
+    name: Compile on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # No dependencies installed on purpose. Byte-compiling catches syntax and
+      # indentation errors without pulling down PyTorch, which would make every
+      # run take minutes for no extra signal. There are no API calls here, so
+      # the job needs no secrets and costs nothing.
+      - name: Byte-compile every module and script
+        run: |
+          python -m compileall -q src scripts presentation
+
+      - name: Confirm the package imports are resolvable
+        run: |
+          python - <<'PY'
+          import ast
+          import sys
+          from pathlib import Path
+
+          # Every src module should be importable by name from the project root.
+          expected = {
+              "chunker", "config", "console", "embedder", "generator",
+              "loader", "retrieval_log", "retriever", "similarity",
+          }
+          found = {p.stem for p in Path("src").glob("*.py")} - {"__init__"}
+
+          missing = expected - found
+          if missing:
+              print(f"missing modules: {sorted(missing)}")
+              sys.exit(1)
+
+          # Each script must declare the sys.path bootstrap, or it breaks when
+          # run directly from the project root.
+          for script in sorted(Path("scripts").glob("*.py")):
+              source = script.read_text(encoding="utf-8")
+              if "sys.path.insert" not in source:
+                  print(f"{script} is missing the sys.path bootstrap")
+                  sys.exit(1)
+
+          print(f"{len(found)} modules, {len(list(Path('scripts').glob('*.py')))} scripts, all accounted for")
+          PY
