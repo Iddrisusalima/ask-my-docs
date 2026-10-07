@@ -682,7 +682,7 @@ improvement.
 | [`docs/screenshots/`](docs/screenshots) | Generated terminal sessions, each with the transcript it was drawn from. Regenerate with `python presentation/render_terminal.py`. |
 | [`docs/architecture.drawio`](docs/architecture.drawio) | One question end to end, with the measurement behind each design choice. Editable in [draw.io](https://app.diagrams.net). |
 | [`.kiro/specs/ask-my-docs/`](.kiro/specs/ask-my-docs) | Requirements, design and task breakdown, written before the code. |
-| [`presentation/`](presentation) | Review deck, the script that generates it, and the speaking notes behind it. |
+| [`presentation/`](presentation) | Review deck, the script that generates it, the demo video script, and the speaking notes behind both. |
 
 The documents in [`sample-notes/`](sample-notes) are my own write-ups from a
 previous project, committed so the tool can be run without supplying your own.
