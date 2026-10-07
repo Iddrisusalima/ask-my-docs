@@ -531,18 +531,129 @@ by name and is skipped, because the other nine are still worth indexing.
 
 ## What I Learned
 
-> **TO BE WRITTEN — this section must be in my own words.**
->
-> It needs to cover, in plain language:
->
-> - what an embedding is, without using "vector" as a cop-out
-> - why splitting documents into chunks matters
-> - what semantic search means
-> - the RAG pipeline end to end
-> - how Chroma compares to one alternative
->
-> The measurements to draw on are all in
-> [`notes/learning-log.md`](notes/learning-log.md).
+### What an embedding is
+
+An embedding is what you get when a model reads a piece of text and turns it into
+a position on a map of meaning. Text that means similar things lands in nearby
+positions, even when the words are completely different. Nobody designed that map
+and nobody chose what each number stands for — the model worked the layout out
+during training, from an enormous amount of text, by learning which words and
+phrases turn up in similar situations. So a single number on its own tells you
+nothing. What carries the information is how close two pieces of text end up to
+each other.
+
+The measurement that made this click for me: *"I bake sourdough bread every
+weekend"* and *"Most Saturdays you will find me making a loaf from scratch"*
+scored **0.618** against each other. Those two sentences share no useful words at
+all. A keyword search scores that pair near nothing.
+
+Two properties matter more than they first appear. The output length never
+changes — 7 characters in and 196 characters in both come back as exactly 384
+numbers. And the numbers are only comparable to others from the same model, which
+is why my vector store records which model built it and refuses to answer if a
+different one asks.
+
+### Why splitting documents into chunks matters
+
+Two reasons, and they push the same way.
+
+First, because that output length is fixed. A whole document gets squeezed into
+the same amount of space as a single sentence, so everything it discusses is
+averaged into one position. A file covering five topics ends up in the bland
+middle of all five and matches none of them sharply.
+
+Second, retrieval should hand the model the paragraph that answers the question,
+not the file that contains it. Everything else in that file is noise: it costs
+money, fills up the context window, and pulls the model's attention away from the
+part that actually matters.
+
+But chunking creates its own failure, and this was the most useful thing I found.
+I planted a 73-character fact so a 500-character cut would land in the middle of
+it. Half went into one chunk, half into the next, and **no chunk contained it
+whole**. The fact was in my notes and my tool could not find it — with no error
+reported anywhere. Overlap fixes that: each chunk repeats the last stretch of the
+one before, so any short fact survives intact somewhere.
+
+### What semantic search means
+
+Semantic search looks for text that *means* the same thing as your question,
+rather than text that uses the same words. When I ask my notes a question, the
+tool is not scanning for keywords — it works out where the question sits on that
+map of meaning, then returns the passages sitting closest to it.
+
+My own numbers showed the difference plainly. Sentences about one topic scored
+0.617 against each other while unrelated ones scored 0.031. And on a question
+phrased to avoid the vocabulary of its own answer, a keyword baseline returned
+three results tied at exactly 0.2857 — it had found the same shallow word-hit
+count everywhere and could not rank them at all. Semantic search produced
+distinct, ordered scores.
+
+The honest limit: closeness in meaning is not the same as answering the question.
+Asking about *Sundays* pulled up a chunk containing *"Sun Oct 4"* from a schedule.
+The model was right that those are related. It has no idea whether being related
+is useful.
+
+### The pipeline, end to end
+
+Five stages: **chunk, embed, store, retrieve, generate.**
+
+My documents get cut into overlapping 350-character pieces. Each piece is turned
+into 384 numbers and stored in a database that can search by closeness. When I ask
+a question, the question is turned into 384 numbers by the *same* model, the
+database returns the five closest pieces, and those pieces — and nothing else —
+are put into a prompt that tells the model to answer only from them and to say so
+if they do not contain the answer. The answer comes back with numbers pointing at
+which pieces it used, and those resolve to real filenames I can open and check.
+
+Ingestion runs once per change to my notes. The query path runs per question.
+
+### Chroma versus Pinecone
+
+I used Chroma. It runs inside my own process, persists to a folder on disk, needs
+no account and no network call, and installed in one line. For a few hundred
+chunks on one machine that is all upside.
+
+Pinecone is a managed service. It scales past a single machine and needs no local
+resources, but it requires an account and an API key, and every query becomes a
+network round trip. FAISS was the third option I looked at: faster at large scale,
+but it stores no metadata, so I would have had to build and keep in sync a
+parallel store just to know which file each embedding came from — and citations
+are the whole point of this tool.
+
+At 317 chunks all three would return the same answers. The deciding factor was
+which one taught me the concept with the least incidental complexity, and which
+one a reviewer could run without signing up for anything.
+
+### When RAG is the right tool, and when it is not
+
+RAG is right when the model needs facts it was never trained on — my own notes,
+a company's internal documents, anything that changes often. Adding a document is
+just re-running ingestion, and because answers cite their source I can verify
+them.
+
+Fine-tuning changes how a model behaves rather than what it knows: tone, format,
+following a particular style of instruction. It is expensive, needs retraining
+whenever the information changes, and the result cannot tell you where an answer
+came from. For *"what did I write about chunk size?"*, RAG is obviously the right
+tool. For *"always reply as a terse code reviewer"*, fine-tuning would be.
+
+### Two things I got wrong
+
+**I assumed a vector database would be more accurate than my own code.** In the
+week before adding Chroma I wrote the whole search as a Python list and a `for`
+loop comparing against every chunk. That version is *exact* — it cannot miss a
+match. Chroma's index is approximate; it skips comparisons on purpose. So the
+database is less accurate than the loop it replaced, and vastly more scalable. I
+had the trade backwards.
+
+**I thought a score threshold could catch unanswerable questions.** Early on,
+related text scored 0.617 and unrelated text 0.031, so a cut-off looked obvious.
+Against a real corpus the gap collapsed: a question my notes cannot answer scored
+0.339, while the weakest genuinely useful answer scored 0.366. I then tested a
+floor across four questions and found that any value which silenced the bad
+question also stripped real answers from the weaker ones. The threshold ships
+switched off, and the prompt — which explicitly permits the model to refuse —
+carries that job instead.
 
 ---
 
