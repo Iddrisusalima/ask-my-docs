@@ -67,8 +67,12 @@ must be the same one** — embeddings from different models are not comparable, 
 comparing them raises no error, it just returns confident nonsense. The store
 records which model built it and refuses a mismatch.
 
-An editable [draw.io](https://app.diagrams.net) version of the same diagram is at
-[`docs/architecture.drawio`](docs/architecture.drawio).
+Editable [draw.io](https://app.diagrams.net) sources, in two levels of detail:
+
+| file | for |
+| ---- | --- |
+| [`docs/architecture.drawio`](docs/architecture.drawio) | one question end to end, with the measurement behind each design choice |
+| [`docs/architecture-overview.drawio`](docs/architecture-overview.drawio) | a one-page system overview with the tested results |
 
 Ingestion runs once, when the notes change. The query side runs per question. The
 embedding model appears on both sides and **must be the same one** — embeddings

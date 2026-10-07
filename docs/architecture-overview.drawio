@@ -1,0 +1,109 @@
+<mxfile host="app.diagrams.net" agent="ask-my-docs" type="device">
+  <diagram name="Ask My Docs - system overview" id="ask-my-docs-overview">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="1000" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= HEADER ================= -->
+        <mxCell id="title" value="Ask My Docs" style="text;html=1;align=left;verticalAlign=middle;fontSize=34;fontStyle=1;fontColor=#0F2A44;" vertex="1" parent="1">
+          <mxGeometry x="70" y="40" width="600" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Retrieval-augmented generation over personal documents. Answers are grounded in retrieved passages, cite their source, and the system declines when the documents do not contain the answer." style="text;html=1;align=left;verticalAlign=top;fontSize=15;fontColor=#55606E;" vertex="1" parent="1">
+          <mxGeometry x="70" y="90" width="1100" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="rule" value="" style="shape=line;strokeWidth=3;strokeColor=#2E8B84;" vertex="1" parent="1">
+          <mxGeometry x="70" y="140" width="130" height="10" as="geometry" />
+        </mxCell>
+
+        <!-- ================= INGESTION ================= -->
+        <mxCell id="ingest-label" value="INGESTION PIPELINE&#10;runs once per document change" style="text;html=1;align=left;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1C4E7A;" vertex="1" parent="1">
+          <mxGeometry x="70" y="190" width="300" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="docs" value="&lt;b&gt;Documents&lt;/b&gt;&#10;&#10;Markdown and PDF&#10;&lt;font color=&quot;#55606E&quot;&gt;79.6k characters&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EEF3F8;strokeColor=#1C4E7A;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="70" y="240" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="chunking" value="&lt;b&gt;Chunking&lt;/b&gt;&#10;&#10;Overlapping windows&#10;&lt;font color=&quot;#55606E&quot;&gt;350 chars / 70 overlap&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1C4E7A;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="240" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="embedding" value="&lt;b&gt;Embedding&lt;/b&gt;&#10;&#10;all-MiniLM-L6-v2, local&#10;&lt;font color=&quot;#55606E&quot;&gt;384 dimensions&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#2E8B84;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="240" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="store" value="&lt;b&gt;Vector Store&lt;/b&gt;&#10;&#10;Chroma, cosine space&#10;&lt;font color=&quot;#55606E&quot;&gt;317 chunks, persisted&lt;/font&gt;" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#FDF4E6;strokeColor=#B56E0C;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="235" width="250" height="115" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ia" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1C4E7A;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="docs" target="chunking"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ib" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1C4E7A;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="chunking" target="embedding"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ic" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1C4E7A;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="embedding" target="store"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ================= QUERY ================= -->
+        <mxCell id="query-label" value="QUERY PATH&#10;runs per question" style="text;html=1;align=left;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#2E8B84;" vertex="1" parent="1">
+          <mxGeometry x="70" y="440" width="300" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="question" value="&lt;b&gt;Question&lt;/b&gt;&#10;&#10;&lt;font color=&quot;#55606E&quot;&gt;natural language&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EEF3F8;strokeColor=#2E8B84;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="70" y="490" width="230" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="retrieval" value="&lt;b&gt;Semantic Retrieval&lt;/b&gt;&#10;&#10;Top-5 by cosine similarity&#10;&lt;font color=&quot;#55606E&quot;&gt;same embedding model&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#2E8B84;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="490" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="grounding" value="&lt;b&gt;Grounded Prompting&lt;/b&gt;&#10;&#10;Numbered passages, answer&#10;&lt;b&gt;only&lt;/b&gt; from supplied context" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF4D6;strokeColor=#B56E0C;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="490" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="answer" value="&lt;b&gt;Cited Answer&lt;/b&gt;&#10;&#10;Source file, chunk id,&#10;&lt;font color=&quot;#55606E&quot;&gt;similarity score&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#DFF3E3;strokeColor=#1E7B3C;strokeWidth=3;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="490" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="qa" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2E8B84;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="question" target="retrieval"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="qb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2E8B84;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="retrieval" target="grounding"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="qc" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2E8B84;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="grounding" target="answer"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="lookup" value="vector search" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#B56E0C;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=11;fontColor=#B56E0C;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="store" target="retrieval">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1185" y="415" />
+              <mxPoint x="525" y="415" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ================= DIFFERENTIATOR ================= -->
+        <mxCell id="refuse" value="&lt;b&gt;Declines rather than hallucinating&lt;/b&gt;&#10;&#10;&quot;What is the capital of Peru?&quot; returns&#10;&lt;i&gt;&quot;I can't find the answer to that in your notes&quot;&lt;/i&gt;&#10;— though the model certainly knows it." style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#B3261E;strokeWidth=2;fontSize=13;align=left;spacingLeft=16;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="70" y="660" width="600" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tuning" value="&lt;b&gt;Tuned on evidence, not intuition&lt;/b&gt;&#10;&#10;Chunk size moved 500 → 350 after a passage was&#10;retrieved mid-word and the model correctly refused.&#10;A relevance threshold was measured, then rejected." style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EEF3F8;strokeColor=#1C4E7A;strokeWidth=2;fontSize=13;align=left;spacingLeft=16;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="710" y="660" width="600" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ================= METRICS ================= -->
+        <mxCell id="m1" value="&lt;font style=&quot;font-size: 26px&quot;&gt;&lt;b&gt;8 / 8&lt;/b&gt;&lt;/font&gt;&#10;answerable questions&#10;answered with citations" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C9D3DD;fontSize=11;fontColor=#55606E;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="70" y="825" width="290" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="&lt;font style=&quot;font-size: 26px&quot;&gt;&lt;b&gt;2 / 2&lt;/b&gt;&lt;/font&gt;&#10;unanswerable questions&#10;correctly declined" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C9D3DD;fontSize=11;fontColor=#55606E;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="825" width="290" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="&lt;font style=&quot;font-size: 26px&quot;&gt;&lt;b&gt;No framework&lt;/b&gt;&lt;/font&gt;&#10;no LangChain or LlamaIndex&#10;every stage written by hand" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C9D3DD;fontSize=11;fontColor=#55606E;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="710" y="825" width="290" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" value="&lt;font style=&quot;font-size: 26px&quot;&gt;&lt;b&gt;$0&lt;/b&gt;&lt;/font&gt;&#10;embeddings run locally&#10;re-indexing costs nothing" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C9D3DD;fontSize=11;fontColor=#55606E;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="825" width="280" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ================= FOOTER ================= -->
+        <mxCell id="stack" value="Python · sentence-transformers · Chroma · pypdf · Gemini via an OpenAI-compatible endpoint, swappable for OpenAI, Groq or a local Ollama server" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontColor=#8A94A0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="945" width="1240" height="24" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
