@@ -20,65 +20,23 @@ supplying your own documents.
 
 ## How it works
 
-```mermaid
-flowchart TD
-    subgraph ingest["INGESTION - runs once per change to your notes"]
-        direction TB
-        A["sample-notes/<br/>5 markdown files<br/>79,581 characters"]
-        B["loader.py<br/>read .md .txt .pdf<br/>keep filename + page"]
-        C["chunker.py<br/>350 chars, 70 overlap<br/>cut at sentence ends"]
-        D["embedder.py<br/>MiniLM-L6-v2<br/>384 numbers per chunk"]
-        E[("store.py - Chroma<br/>317 chunks on disk<br/>cosine distance")]
-        A --> B --> C --> D --> E
-    end
+![Ask My Docs architecture: ingestion pipeline and query path](docs/screenshots/architecture-overview.png)
 
-    subgraph query["QUERY - runs once per question"]
-        direction TB
-        Q["your question"]
-        QE["embedder.py<br/>same model, 384 numbers"]
-        R["retriever.py<br/>top 5 nearest<br/>distance to similarity"]
-        G["generator.py<br/>numbered passages 1-5<br/>+ permission to refuse"]
-        L["chat model<br/>Gemini 3.5-flash-lite"]
-        OUT["answer + citations"]
-        Q --> QE --> R --> G --> L --> OUT
-    end
+Ingestion runs once, and again whenever the notes change. The query path runs per
+question. The two halves meet at the vector store.
 
-    E -. "similarity search" .-> R
-    R -. "logged" .-> LOG["logs/retrieval.log"]
+**The embedding model appears on both sides and must be the same one.** Embeddings
+from different models are not comparable, and comparing them raises no error — it
+returns confident nonsense. The store records which model built it and refuses a
+mismatch.
 
-    classDef source fill:#dbeafe,stroke:#1e40af,stroke-width:2px,color:#0f172a
-    classDef plain fill:#ffffff,stroke:#475569,stroke-width:1.5px,color:#0f172a
-    classDef embed fill:#d1fae5,stroke:#047857,stroke-width:2px,color:#0f172a
-    classDef db fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
-    classDef out fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#0f172a
-    classDef aside fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+Editable [draw.io](https://app.diagrams.net) sources:
 
-    class A,Q source
-    class B,C,R,G plain
-    class D,QE embed
-    class E db
-    class L aside
-    class OUT out
-    class LOG aside
-```
-
-The two halves meet at the store. **The embedding model appears on both sides and
-must be the same one** — embeddings from different models are not comparable, and
-comparing them raises no error, it just returns confident nonsense. The store
-records which model built it and refuses a mismatch.
-
-Editable [draw.io](https://app.diagrams.net) sources, in two levels of detail:
-
-| file | for |
-| ---- | --- |
+| file | shows |
+| ---- | ----- |
+| [`docs/architecture-overview.drawio`](docs/architecture-overview.drawio) | the diagram above — components and tested results |
 | [`docs/architecture.drawio`](docs/architecture.drawio) | one question end to end, with the measurement behind each design choice |
-| [`docs/architecture-overview.drawio`](docs/architecture-overview.drawio) | a one-page system overview with the tested results |
 
-Ingestion runs once, when the notes change. The query side runs per question. The
-embedding model appears on both sides and **must be the same one** — embeddings
-from different models are not comparable, and comparing them raises no error, it
-just returns confident nonsense. The store records which model built it and
-refuses a mismatch.
 
 ---
 
