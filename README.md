@@ -55,11 +55,11 @@ out by hand with no RAG framework involved.
 
 ## Demo
 
-> **DEMO VIDEO** — _to be recorded._
+> **[ASK MY DOCS DEMO VIDEO](https://drive.google.com/file/d/1DM_vo4FN3QjvrGWPz6bJATUxGBddXNDq/view?usp=sharing)**
 >
-> A run through the tool covering ingestion, two or three live questions, what
-> happens at each stage of the pipeline, and the behaviour when a question has no
-> answer in the notes.
+> A run through the tool covering the ingestion step, live questions answered with
+> citations, the exact prompt the model receives, and what happens when a question
+> has no answer in the notes.
 
 ![A real question, its answer, and the cited sources](docs/screenshots/answer-with-citations.png)
 
