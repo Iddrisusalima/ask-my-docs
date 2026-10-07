@@ -3,7 +3,7 @@ Storing embedded chunks in Chroma, a real vector database.
 
 What changes from the in-memory store
 -----------------------
-Friday's store was a Python list and the search was a `for` loop comparing the
+The first store was a Python list and the search was a `for` loop comparing the
 question against every chunk. That was *exact*: it looked at everything, so it
 could not miss a match. Its weakness was only that the work grows linearly with
 the corpus.

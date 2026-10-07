@@ -8,9 +8,9 @@ Run it:
 
 This is a complete, working semantic search engine with no database in it. The
 store is a Python list; the search is a `for` loop over the cosine similarity
-function written on Monday.
+cosine similarity function written earlier.
 
-Building it this way first is deliberate. On Monday, Chroma arrives and does
+Building it this way first is deliberate. Next, Chroma arrives and does
 this same job, and "it performs similarity search" is a sentence that means
 nothing until you have written the loop it replaces. After today you will know
 exactly what the database does, and therefore what it actually buys you - which
@@ -258,7 +258,7 @@ def part_3_no_good_answer(
                 f"{lowest_genuine:.4f}\n  against the unanswerable question's {best:.4f} - "
                 f"a margin of just {margin:.4f}.\n"
                 "\n  So a floor does separate them here, but only barely. That is a much\n"
-                "  narrower gap than Monday's 0.617-versus-0.031 suggested, and it is not\n"
+                "  narrower gap than the earlier 0.617-versus-0.031 suggested, and it is not\n"
                 "  a number to hardcode confidently off one corpus and four questions.\n"
                 "  This test should be widened before generation depends on it."
             )
@@ -269,7 +269,7 @@ def part_3_no_good_answer(
         "day names. The model is doing its job - those really are related in\n"
         "meaning. It has no concept of whether the relation answers the question.\n"
         "\nThis is the failure generation has to handle. Hand these chunks to a language\n"
-        "model as context and it will dutifully attempt an answer from them. Monday's\n"
+        "model as context and it will dutifully attempt an answer from them. The earlier\n"
         "clean 0.03-versus-0.62 gap came from sentences chosen to be unrelated; a\n"
         "real corpus is messier, because with a few hundred chunks something will\n"
         "always be somewhat close to anything. A score floor is therefore necessary\n"
@@ -362,7 +362,7 @@ def part_5_why_a_database(
     print(
         "\nAt this size the loop is instant and a database would be pure overhead.\n"
         "The scan is also *exact* - it compares everything, so it cannot miss a\n"
-        "match. That matters, because what Chroma provides on Monday is an\n"
+        "match. That matters, because what Chroma provides next is an\n"
         "APPROXIMATE nearest-neighbour index: it deliberately skips most\n"
         "comparisons, trading a small chance of missing a match for search time\n"
         "that barely grows with corpus size.\n"
@@ -380,7 +380,7 @@ def part_6_over_to_you() -> None:
         "notes/learning-log.md. Plain language means a sentence your mentor\n"
         "could read aloud to someone who has never heard the word 'embedding'.\n"
         "\nThe raw material is all now measured:\n"
-        "  - Monday: related sentences scored 0.617, unrelated 0.031, with almost\n"
+        "  - Earlier: related sentences scored 0.617, unrelated 0.031, with almost\n"
         "    no shared keywords between the related pair\n"
         "  - Part 4 above: a question that keyword search cannot answer, and\n"
         "    semantic search can\n"

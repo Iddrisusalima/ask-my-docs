@@ -91,7 +91,7 @@ def part_2_length_independence(embedder: Embedder) -> None:
         "\nSame budget of numbers for 7 characters and 200+. A long document\n"
         "therefore gets *averaged out* into that same fixed space, blurring the\n"
         "detail. That is precisely why we split documents into chunks before\n"
-        "embedding them (coming up Wed-Thu)."
+        "embedding them - the next stage."
     )
 
 
@@ -199,7 +199,7 @@ def main() -> int:
         return 1
 
     print(f"\n{'=' * 68}")
-    print("Done. Next: Wed-Thu, splitting real documents into chunks.")
+    print("Done. Next: splitting real documents into chunks.")
     print(f"{'=' * 68}\n")
     return 0
 

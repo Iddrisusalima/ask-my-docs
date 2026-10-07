@@ -266,7 +266,7 @@ def part_6_over_to_you(results: list[dict]) -> None:
             )
 
     print(
-        "Still to do before Friday:\n"
+        "Still to do:\n"
         "  1. Put 5-10 of your own notes in sample-notes/ and re-run this. The\n"
         "     numbers above describe whatever folder you pointed at, and the\n"
         "     README has to describe the dataset you actually ship.\n"
@@ -322,7 +322,7 @@ def main() -> int:
     part_6_over_to_you(results)
 
     print(f"\n{'=' * 72}")
-    print("Done. Next: Friday, embed every chunk and search them by hand.")
+    print("Done. Next: embed every chunk and search it by hand.")
     print(f"{'=' * 72}\n")
     return 0
 

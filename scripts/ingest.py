@@ -10,10 +10,10 @@ notes folder:
 
     load -> chunk -> embed -> index
 
-The query half (Wed-Thu) then reuses the stored index for every question.
+The query half then reuses the stored index for every question.
 
-The script also answers the question the brief sets for this week - how does the
-database actually perform similarity search - by measuring it against Friday's
+The script also answers the question the brief sets - how does the database
+actually perform similarity search - by measuring it against the hand-written
 brute-force loop rather than just describing it. Part 5 checks whether Chroma's
 approximate index returns the same chunks the exact scan found.
 """
@@ -50,7 +50,7 @@ def rule(title: str) -> None:
 def exact_search(
     embeddings: list[list[float]], chunk_ids: list[str], query_embedding: list[float], top_k: int
 ) -> list[tuple[float, str]]:
-    """Friday's brute-force scan, kept as the yardstick for the index.
+    """The hand-written brute-force scan, kept as the yardstick for the index.
 
     Compares against every embedding, so its answer is exact by construction.
     That makes it the right baseline for measuring what the approximate index
@@ -170,12 +170,12 @@ def main() -> int:
     # ------------------------------------------------------------------
     # A fresh VectorStore object, opening the collection from disk rather than
     # reusing the one just written to. This is the property the in-memory list
-    # from Friday did not have.
+    # from the in-memory stage did not have.
     reopened = VectorStore(path=arguments.db, collection=arguments.collection)
     print(f"reopened from disk: {reopened.count()} chunks")
     print(f"recorded model:     {reopened.embedding_model()}")
     print(
-        "\nFriday's store was a Python list and vanished when the process exited.\n"
+        "\nThe in-memory store was a Python list and vanished when the process exited.\n"
         "Every question meant re-embedding the whole corpus first - 30 seconds\n"
         "before answering anything. This survives restarts, so that cost is now\n"
         "paid once per change to the notes instead of once per run."
@@ -271,7 +271,7 @@ def main() -> int:
 
     rule("Done")
     print(f"{written} chunks indexed and queryable.")
-    print("Next: Wed-Thu, the retrieval function and tuning top-k.")
+    print("Next: the retrieval function, and tuning top-k.")
     print()
     return 0
 
