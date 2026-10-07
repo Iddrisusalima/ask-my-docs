@@ -29,3 +29,6 @@ logs/
 Thumbs.db
 .vscode/
 .idea/
+
+# Presentation material - kept locally, not part of the submitted repo
+presentation/

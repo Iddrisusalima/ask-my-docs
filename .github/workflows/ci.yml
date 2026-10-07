@@ -29,7 +29,7 @@ jobs:
       # the job needs no secrets and costs nothing.
       - name: Byte-compile every module and script
         run: |
-          python -m compileall -q src scripts presentation
+          python -m compileall -q src scripts
 
       - name: Confirm the package imports are resolvable
         run: |

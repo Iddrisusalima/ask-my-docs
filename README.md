@@ -205,10 +205,6 @@ docs/
   architecture-overview.drawio   Editable source for the diagram above
   architecture.drawio            One question end to end, with the measurements
   screenshots/                   Generated terminal sessions plus transcripts
-presentation/
-  build_deck.py          Generates the mentor review deck
-  render_terminal.py     Runs each session and renders it as a PNG
-  presentation-script.md What to say for each slide
 .kiro/
   specs/ask-my-docs/     Requirements, design and tasks, written before the code
   steering/              Project conventions and learning constraints
@@ -482,7 +478,7 @@ installs no dependencies and makes no API calls, so it needs no secrets and cost
 nothing.
 
 ```bash
-python -m compileall -q src scripts presentation
+python -m compileall -q src scripts
 ```
 
 ### Measured answer quality
@@ -679,10 +675,9 @@ improvement.
 | Document | Contents |
 | --- | --- |
 | [`notes/learning-log.md`](notes/learning-log.md) | Every measurement behind the project, by pipeline stage: similarity scores, the chunk-size experiments, top-k tuning, the relevance-floor finding, and the ten-question quality test. Includes what I got wrong and had to change. |
-| [`docs/screenshots/`](docs/screenshots) | Generated terminal sessions, each with the transcript it was drawn from. Regenerate with `python presentation/render_terminal.py`. |
+| [`docs/screenshots/`](docs/screenshots) | Generated terminal sessions, each with the transcript it was drawn from. |
 | [`docs/architecture.drawio`](docs/architecture.drawio) | One question end to end, with the measurement behind each design choice. Editable in [draw.io](https://app.diagrams.net). |
 | [`.kiro/specs/ask-my-docs/`](.kiro/specs/ask-my-docs) | Requirements, design and task breakdown, written before the code. |
-| [`presentation/`](presentation) | Review deck, the script that generates it, the demo video script, and the speaking notes behind both. |
 
 The documents in [`sample-notes/`](sample-notes) are my own write-ups from a
 previous project, committed so the tool can be run without supplying your own.
