@@ -1077,9 +1077,20 @@ _(not started)_
 
 ---
 
-## Blocking everything
+## Where the dataset caveat landed
 
-`sample-notes/` is **still empty**. Every number in all three learning logs
-describes this project's own documentation. Before the README screenshot and the
-ten-question test, that folder needs 5–10 of my own non-sensitive notes — the
-brief requires it committed so the mentor can run the tool unmodified.
+Most of the measurements above were taken while `sample-notes/` was still empty,
+against this project's own documentation as a stand-in. That is now resolved: the
+folder holds five of my own write-ups from a previous project, 79,581 characters,
+and the figures in sections 9 and 10 were taken against that real dataset.
+
+The stand-in figures are left in place deliberately rather than deleted. They are
+what the earlier decisions were made on, and the gap between them and the real
+numbers is the point: chunk size moved from 500 to 350 only once real questions
+were asked of real notes. A log that quietly replaced its own history would hide
+the most useful thing in it.
+
+One lesson from using the project's own docs as a stand-in: the corpus was
+*self-modifying*. Editing the spec files changed the thing being measured, and the
+chunk count drifted from 159 to 171 during the week with no code change. A fixed
+dataset is not a nicety.
