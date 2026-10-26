@@ -34,7 +34,7 @@ rather than an error. Requirement 5.5 exists to turn that silence into a message
 
 ## Components
 
-### `src/embedder.py` — built, Week 1 Mon–Tue
+### `src/embedder.py` — embed stage
 
 Wraps two providers behind one class so nothing downstream knows which is in use.
 
@@ -62,7 +62,7 @@ Design points:
 - `describe()` exists so logs and README screenshots state which model produced
   the numbers being shown.
 
-### `src/similarity.py` — built, Week 1 Mon–Tue
+### `src/similarity.py` — compare stage
 
 ```python
 def cosine_similarity(a, b) -> float
@@ -74,7 +74,7 @@ kept even though MiniLM returns normalised output and the dot product alone
 would suffice — the explicit form stays correct if the model is swapped for one
 that does not normalise, and the arithmetic is the thing being learned.
 
-### `src/loader.py` — Week 1 Wed
+### `src/loader.py` — load stage
 
 ```python
 @dataclass(frozen=True)
@@ -94,7 +94,7 @@ boundaries from character offsets later.
 Per-file failures are collected and reported, never fatal: one unreadable file
 out of ten should not abort ingestion.
 
-### `src/chunker.py` — Week 1 Wed
+### `src/chunker.py` — chunk stage
 
 ```python
 @dataclass(frozen=True)
@@ -122,7 +122,7 @@ boundary earlier, so the advance step remains predictable.
 `chunk_id` is a readable composite rather than a UUID specifically so that a
 citation in the demo means something to a human watching the video.
 
-### `src/store.py` — Week 2 Mon–Tue
+### `src/store.py` — store stage
 
 ```python
 @dataclass(frozen=True)
@@ -141,7 +141,7 @@ class VectorStore:
     def assert_model_matches(self, embedding_model: str) -> None
 ```
 
-**Built, Week 2 Mon–Tue.** Two deviations from the original sketch:
+Two deviations from the original sketch, both found while building:
 
 `query` returns `StoredMatch` (carrying a raw distance) rather than
 `RetrievedChunk` (carrying a similarity). `RetrievedChunk` lives in
@@ -165,7 +165,7 @@ model was used. One line to remove the risk.
 
 Embeddings are computed by our own `Embedder` and passed in, rather than letting
 Chroma attach its own embedding function. Keeping that boundary visible is the
-whole point of Week 1's work.
+whole point of writing the embedding stage by hand.
 
 The producing model name is stored as collection metadata so Requirement 5.5's
 mismatch check has something to compare against.
@@ -174,7 +174,7 @@ mismatch check has something to compare against.
 this scale, and idempotent full rebuilds avoid a class of duplicate-chunk bugs
 that are tedious to diagnose.
 
-### `src/retriever.py` — Week 2 Wed–Thu
+### `src/retriever.py` — retrieve stage
 
 ```python
 @dataclass(frozen=True)
@@ -189,16 +189,21 @@ class Retriever:
 
 Chroma returns *distance*; the retriever converts to similarity (`1 - distance`
 for cosine space) so that every number the user sees carries the same meaning as
-the Week 1 numbers. Mixing distance and similarity in one project is a reliable
-source of confusion.
+the scores from the hand-written cosine in `src/similarity.py`. Mixing distance
+and similarity in one project is a reliable source of confusion.
 
 `min_score` is the mechanism behind Requirement 6.6 — the difference between
 "nothing relevant" and "here are the five least irrelevant chunks in your
-notes". Its default must be chosen by measurement, not guessed: Week 1 showed
-unrelated text scoring around 0.03 and related text around 0.62 for this model,
-so the floor belongs somewhere in that gap, validated against real questions.
+notes". Its default must be chosen by measurement, not guessed: the isolated
+sentence test showed unrelated text scoring around 0.03 and related text around
+0.62 for this model, which suggested a floor somewhere in that gap.
 
-### `src/generator.py` — Week 3 Mon–Wed
+**That suggestion did not survive real questions.** On the actual corpus an
+unanswerable question scored 0.3386 against the weakest useful answer's 0.3655,
+and no floor separated them. `MIN_SCORE` ships empty; refusal is handled in the
+prompt instead. The reasoning is in the Configuration section below.
+
+### `src/generator.py` — generate stage
 
 ```python
 def build_prompt(question: str, chunks: list[RetrievedChunk], char_budget: int) -> tuple[str, list[RetrievedChunk]]
@@ -222,19 +227,24 @@ the compliant response — which is what makes Requirement 8.4 achievable.
 
 ### `scripts/` — the demo surface
 
-| Script | Week | Shows |
-| ------ | ---- | ----- |
-| `embeddings.py` | 1 Mon–Tue | one sentence → 384 numbers; similar vs unrelated cosine scores |
-| `chunking.py` | 1 Wed–Thu | the same document under different size/overlap settings |
-| `search_in_memory.py` | 1 Fri | every chunk embedded, held in a plain list, searched by hand |
-| `ingest.py` | 2 Mon–Tue | load → chunk → embed → index into Chroma |
-| `retrieve.py` | 2 Wed–Fri | a question → top-k chunks with scores; top-k comparison; logging |
-| `ask.py` | 3 | the full pipeline: question → answer → citations |
+Listed in pipeline order, which is also the order they were built.
 
-Week 1 Friday deliberately builds search over a plain Python list before Chroma
-arrives on Monday. Doing the linear scan by hand first is what makes the
+| Script | Stage | Shows |
+| ------ | ----- | ----- |
+| `embeddings.py` | embed | one sentence → 384 numbers; similar vs unrelated cosine scores |
+| `chunking.py` | chunk | the same document under different size/overlap settings |
+| `search_in_memory.py` | search, by hand | every chunk embedded, held in a plain list, scanned linearly |
+| `ingest.py` | store | load → chunk → embed → index into Chroma |
+| `retrieve.py` | retrieve | a question → top-k chunks with scores; top-k comparison; logging |
+| `ask.py` | generate | the full pipeline: question → answer → citations |
+
+`search_in_memory.py` deliberately builds search over a plain Python list before
+Chroma is introduced. Doing the linear scan by hand first is what makes the
 database's contribution legible — otherwise "it does similarity search" is a
-phrase rather than an understanding.
+phrase rather than an understanding. It also produced the one result that
+reversed an assumption: the brute-force scan cannot miss a match, whereas
+Chroma's HNSW index skips comparisons by design, which is where its speed comes
+from. Measured on this corpus the two agreed on 10 of 10 queries.
 
 ## Data flow example
 
@@ -260,16 +270,36 @@ All through `.env`, defaults in code, nothing hardcoded at a call site.
 | `EMBEDDING_BACKEND` | `local` | `local` or `openai` |
 | `LOCAL_EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | 384 dims |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | 1536 dims |
-| `OPENAI_API_KEY` | — | required for `openai` backend and Week 3 generation |
+| `OPENAI_API_KEY` | — | required for the `openai` backend and for generation |
+| `OPENAI_BASE_URL` | — | empty for OpenAI itself; set for any compatible provider |
 | `OPENAI_CHAT_MODEL` | `gpt-4o-mini` | answer generation |
-| `CHUNK_SIZE` | 500 (provisional) | **to be set by Week 1 Wed–Thu measurement** |
-| `CHUNK_OVERLAP` | 100 (provisional) | **to be set by Week 1 Wed–Thu measurement** |
-| `TOP_K` | 5 (provisional) | **to be set by Week 2 Wed–Thu measurement** |
-| `MIN_SCORE` | none (provisional) | **to be set by Week 3 no-answer testing** |
+| `CHUNK_SIZE` | **350** | settled by measurement |
+| `CHUNK_OVERLAP` | **70** | settled by measurement |
+| `TOP_K` | **5** | settled by measurement |
+| `MIN_SCORE` | **empty** | measured, then deliberately rejected |
 
-The four provisional values are the project's actual findings. They are starting
-points from the brief, not conclusions, and the README must justify the final
-numbers with observations (Requirement 12.3).
+Those last four started as provisional values from the brief and were replaced
+by findings. What each measurement showed:
+
+- **`CHUNK_SIZE` 350.** 500 cut a sentence mid-word, so neither half matched and
+  the question went unanswered. 900 absorbed an eight-line section into a chunk
+  of unrelated material, diluting its embedding until it stopped matching. 350
+  answered both. The number is a property of these notes — short sections with
+  frequent headings, roughly 350 characters each — not a universal constant.
+- **`CHUNK_OVERLAP` 70.** One fifth of chunk size, enough to carry a sentence
+  across a cut without inflating the chunk count.
+- **`TOP_K` 5.** Compared against 3 and 10. k=10 cost 3.4x the context for a
+  0.06 drop in mean relevance and spent three slots on duplicate neighbouring
+  chunks; k=3 drew on too few source documents.
+- **`MIN_SCORE` empty.** An unanswerable question scored 0.3386 while the
+  weakest genuinely useful answer scored 0.3655 — a gap of 0.027. Swept across
+  four real questions, every floor high enough to silence the bad question also
+  stripped passages from good ones. Scores are not calibrated across questions,
+  so an absolute threshold compares numbers that were never on the same scale.
+  Refusal is handled in the prompt instead.
+
+The full sweeps behind each of these are in `notes/learning-log.md`, and the
+README justifies the final numbers as Requirement 12.3 asks.
 
 ## Error handling
 
@@ -293,8 +323,8 @@ conditions.
 ## Decisions and rationale
 
 **Local embeddings over the OpenAI API by default.** Free, offline after a
-one-time 90 MB download, and — most importantly — free to re-run. Week 1
-Wed–Thu and Week 2 Wed–Thu both require re-embedding the entire corpus
+one-time 90 MB download, and — most importantly — free to re-run. Both the
+chunk-size sweep and the top-k comparison require re-embedding the entire corpus
 repeatedly to compare settings. Per-call billing makes a learner hesitate to
 experiment, and hesitation is the one outcome this project cannot afford.
 
@@ -317,11 +347,11 @@ pretend it does not exist.
 
 **Fixed-size chunking over semantic chunking.** The brief asks for fixed-size
 with overlap. Semantic chunking (splitting on topic shifts) generally retrieves
-better but obscures the size/overlap tradeoff that Week 1 is built around. Worth
+better but obscures the size/overlap tradeoff this project is built around. Worth
 naming in the README as the obvious next improvement.
 
 **Distance converted to similarity at the retriever boundary.** Chroma speaks
-distance, Week 1 taught similarity. Converting once, at the edge, means every
+distance; `src/similarity.py` established similarity. Converting once, at the edge, means every
 score the user ever sees points the same way: higher is better.
 
 **Numbered context passages.** Enables precise citations and gives the model a
@@ -342,7 +372,7 @@ compact way to attribute each claim.
 ## Verification approach
 
 No test suite — the brief does not ask for one and adding it unprompted spends
-Week 3 time that belongs to the README and the video. Verification is by running
+time that belongs to the README and the video. Verification is by running
 each script and inspecting its output, which is exactly what the mentor will do.
 
 The substantive checks are empirical and belong in the learning log:

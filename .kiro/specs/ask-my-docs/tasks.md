@@ -1,10 +1,37 @@
 # Implementation Plan — Ask My Docs
 
 Tasks follow the brief's day-by-day structure. Week 1 began Mon Sep 21, 2026, so
-weeks are shifted one forward from the dates printed in the brief.
+weeks are shifted one forward from the dates printed in the brief. Submission is
+Fri Oct 30, 2026, confirmed with the mentor.
 
 Status legend: `[x]` complete, `[ ]` not started. Tasks marked **BLOCKED** need
 something from the user before they can start.
+
+## Status
+
+**All implementation is complete.** The pipeline is built, measured, documented,
+screenshotted, pushed, and demonstrated on video. Settings are `CHUNK_SIZE=350`,
+`CHUNK_OVERLAP=70`, `TOP_K=5`, `MIN_SCORE` empty, each chosen by measurement.
+Verified on the committed dataset: 8 of 8 answerable questions answered with
+citations, 2 of 2 unanswerable questions declined.
+
+Six tasks remain open, and five of them are deliberately the user's own work —
+explanations that cannot be written for them without defeating the purpose of
+the project (see `learning-guardrails.md`):
+
+| Task | What is outstanding |
+| ---- | ------------------- |
+| 7.7 | why splitting documents matters, in the user's words |
+| 8.4 | what semantic search means, in plain language |
+| 11.2 | Chroma compared against one alternative |
+| 15.4 | the README "What I Learned" section — drafted, needs rewriting in the user's voice |
+| 16.3 | walking the brief's self-check list out loud |
+| 16.4 | sending the mentor the links |
+
+For each of the five writing tasks, the measurements, tables and mechanical
+facts are already supplied in `notes/learning-log.md`. What is missing is the
+argument, which has to be the user's — a follow-up question in the demo would
+expose borrowed wording immediately.
 
 ---
 
@@ -200,7 +227,8 @@ something from the user before they can start.
   - factual contrasts supplied in `notes/learning-log.md`; the argument must be theirs
   - _Requirements: 11.3, 11.4_
 - [x] 11.3 Commit Week 2 work
-- [ ] 11.4 Confirm the real deadline with the mentor if still unresolved, and cut scope now if it holds at Oct 4
+- [x] 11.4 Confirm the real deadline with the mentor if still unresolved, and cut scope now if it holds at Oct 4
+  - resolved: submission is Fri Oct 30, 2026, so no scope was cut
 
 ---
 
@@ -246,32 +274,50 @@ something from the user before they can start.
   - _Requirements: 11.2_
 
 - [ ] 15. Polish and document — Fri–Sat
-- [ ] 15.1 Handle the remaining edge cases: empty folder, no matches, missing `.env`
+- [x] 15.1 Handle the remaining edge cases: empty folder, no matches, missing `.env`
+  - each raises with the fix named in the message rather than a stack trace
   - _Requirements: 3.5, 3.6, 5.6, 10.4_
-- [ ] 15.2 Review comments and docstrings across `src/` for the mentor reading it cold
+- [x] 15.2 Review comments and docstrings across `src/` for the mentor reading it cold
   - _Requirements: 11.1_
-- [ ] 15.3 Write the README description, dataset summary, and setup instructions
+- [x] 15.3 Write the README description, dataset summary, and setup instructions
   - including how a reviewer adds their own documents
+  - badges, table of contents, architecture diagram, prerequisites table, numbered
+    install steps with per-OS blocks, usage tables, verification section
   - _Requirements: 12.3, 12.5_
 - [ ] 15.4 User writes the README "What I Learned" section
   - embeddings, chunking, and the pipeline in their own words; must survive a follow-up question
+  - **the section exists but is currently in the agent's words.** It is raw
+    material, not a deliverable. Rewriting it in the user's voice is the
+    outstanding work here, per `learning-guardrails.md`
   - _Requirements: 11.3, 11.4, 12.3_
-- [ ] 15.5 Document final `CHUNK_SIZE`, `CHUNK_OVERLAP`, `TOP_K`, and `MIN_SCORE` with the measurements behind them
+- [x] 15.5 Document final `CHUNK_SIZE`, `CHUNK_OVERLAP`, `TOP_K`, and `MIN_SCORE` with the measurements behind them
+  - 350 / 70 / 5 / empty, each justified in `.env.example`, the README and `notes/learning-log.md`
   - _Requirements: 12.3_
-- [ ] 15.6 Capture a screenshot of a real question, answer, and citation for the README
+- [x] 15.6 Capture a screenshot of a real question, answer, and citation for the README
+  - 6 screenshots in `docs/screenshots/`, each with a `.txt` transcript beside it
   - _Requirements: 12.3_
 - [x] 15.7 Verify no secrets, venv, database, or model cache are tracked by git
+  - re-verified: `.env` absent from all commits; the key value absent from every
+    blob in history; no credential patterns anywhere; same check passed on Project 1,
+    which shares the key
   - _Requirements: 12.4_
-- [ ] 15.8 Record the 3–4 minute demo: ingestion, then 2–3 live questions, narrating each stage
+- [x] 15.8 Record the 3–4 minute demo: ingestion, then 2–3 live questions, narrating each stage
+  - 3:30, linked from the README
   - _Requirements: 12.6_
 
 - [ ] 16. Submit — Sun
-- [ ] 16.1 Push to a public GitHub repository named `ask-my-docs`
+- [x] 16.1 Push to a public GitHub repository named `ask-my-docs`
+  - `github.com/Iddrisusalima/ask-my-docs`, with description, homepage and 10 topics set
   - _Requirements: 12.1_
-- [ ] 16.2 Clone fresh into a temporary folder and follow the README exactly to confirm it works
+- [x] 16.2 Clone fresh into a temporary folder and follow the README exactly to confirm it works
+  - passed
   - _Requirements: 12.5_
 - [ ] 16.3 Walk the self-check list in section 7 of the brief, out loud
   - explain an embedding without saying "vector"; explain the pipeline in under a minute
+  - the question list is in `presentation/mentor-questions.md`; work through it
+    without looking at the answers
   - _Requirements: 11.3_
 - [ ] 16.4 Send the mentor the repo link and the video link before 11:59 PM
+  - also worth sending: the write-up at
+    `dev.to/salima_iddrisu/my-rag-tool-refused-to-answer-a-question-my-notes-clearly-answered-aho`
   - _Requirements: 12.6_

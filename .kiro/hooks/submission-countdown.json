@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Submission Countdown",
+      "trigger": "SessionStart",
+      "description": "On session start, prints today's date and the days remaining until the confirmed Fri 30 Oct 2026 submission, states that implementation is complete, and points at the Status section of the task list for the six tasks still open.",
+      "action": {
+        "type": "command",
+        "command": "$deadline=Get-Date '2026-10-30'; $now=Get-Date; $left=[math]::Ceiling(($deadline - $now).TotalDays); if($left -lt 0){ Write-Output (\"Ask My Docs | {0} | Submission date Fri 30 Oct 2026 has passed. Confirm with the mentor whether anything is outstanding.\" -f $now.ToString('ddd dd MMM yyyy')) } else { Write-Output (\"Ask My Docs | {0} | {1} day(s) to submission, Fri 30 Oct 2026. Implementation is complete. 6 tasks remain open and 5 of them are the user's own words - see the Status section in .kiro/specs/ask-my-docs/tasks.md.\" -f $now.ToString('ddd dd MMM yyyy'), $left) }; exit 0",
+        "timeout": 20
+      }
+    }
+  ]
+}

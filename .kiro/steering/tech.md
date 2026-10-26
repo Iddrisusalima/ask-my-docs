@@ -25,9 +25,9 @@ Pinned in `requirements.txt`. Installed with:
 | `numpy` | 2.1.3 | vector arithmetic |
 | `python-dotenv` | 1.0.1 | reads `.env` |
 | `sentence-transformers` | 3.3.1 | local embedding model (pulls torch, CPU build) |
-| `openai` | 1.59.6 | optional embedding backend, and Week 3 chat model |
+| `openai` | 1.59.6 | optional embedding backend, and the chat model used for generation |
 | `pypdf` | 5.1.0 | PDF text extraction |
-| `chromadb` | 1.5.9 | vector database, Week 2 |
+| `chromadb` | 1.5.9 | vector database |
 
 Before adding anything new, check it against the allow/deny list in
 `learning-guardrails.md`.
@@ -71,8 +71,11 @@ configuration={"hnsw": {"space": "cosine"}}
 ```
 
 Measured: for perpendicular unit vectors the default reports distance 2.0 where
-cosine reports 1.0. With cosine, `similarity = 1 - distance` recovers Week 1's
-scale exactly. For L2-normalised embeddings the two rank the same way, so getting
+cosine reports 1.0. With cosine, `similarity = 1 - distance` recovers the same
+scale as the hand-written cosine in `src/similarity.py`, so scores from
+`search_in_memory.py` and from Chroma are directly comparable — which is what
+made the 10-of-10 agreement check between them meaningful.
+For L2-normalised embeddings the two rank the same way, so getting
 this wrong does not raise an error — it silently degrades retrieval the moment a
 non-normalising model is used.
 
@@ -83,8 +86,24 @@ To silence its telemetry notice in scripted runs: `$env:ANONYMIZED_TELEMETRY='Fa
 
 ## Configuration
 
-All config goes through `.env`, with `.env.example` as the committed template.
-`.env` is gitignored and must stay that way — it holds the OpenAI key.
+All config goes through `.env`, read in one place, `src/config.py`, with
+`.env.example` as the committed template. `.env` is gitignored and must stay
+that way — it holds the API key.
+
+The settled values, each chosen by measurement rather than guesswork. The
+reasoning for every one is in `.env.example` and `notes/learning-log.md`:
+
+| Setting | Value | Why |
+| ------- | ----- | --- |
+| `CHUNK_SIZE` | 350 | at 500 a sentence was cut mid-word and never retrieved; at 900 a short section was diluted and stopped matching |
+| `CHUNK_OVERLAP` | 70 | one fifth of chunk size, enough to carry a sentence across a cut |
+| `TOP_K` | 5 | k=10 cost 3.4x the context for a 0.06 drop in mean relevance; k=3 drew on too few sources |
+| `MIN_SCORE` | empty | any floor high enough to reject an unanswerable question also stripped real answers; refusal is handled in the prompt instead |
+
+Generation runs against Gemini through its OpenAI-compatible endpoint, so the
+`openai` client is used unchanged — `OPENAI_BASE_URL` points at
+`https://generativelanguage.googleapis.com/v1beta/openai/`. Any
+OpenAI-compatible provider works the same way.
 
 Switching embedding backend is a single value: `EMBEDDING_BACKEND=local` or
 `openai`. Nothing outside `src/embedder.py` should care which is active.
@@ -95,16 +114,37 @@ collection.
 
 ## Running things
 
+The scripts are listed here in pipeline order. Each works standalone.
+
 ```powershell
-# Week 1 Mon-Tue: embeddings and cosine similarity demo
+# embeddings and cosine similarity demo
 .\venv\Scripts\python.exe scripts\embeddings.py
 
-# Week 1 Wed-Thu: chunking pipeline, boundary demo, size/overlap sweep
+# chunking pipeline, boundary demo, size/overlap sweep
 .\venv\Scripts\python.exe scripts\chunking.py --folder sample-notes
 
-# one configuration only, for a quick check
+# one chunking configuration only, for a quick check
 .\venv\Scripts\python.exe scripts\chunking.py --folder sample-notes --chunk-size 800 --overlap 160
+
+# brute-force search over an in-memory list, before any vector database
+.\venv\Scripts\python.exe scripts\search_in_memory.py --folder sample-notes
+
+# load, chunk, embed and persist into Chroma
+.\venv\Scripts\python.exe scripts\ingest.py --folder sample-notes
+
+# retrieval only: question in, ranked chunks out, no model involved
+.\venv\Scripts\python.exe scripts\retrieve.py --question "why are input and output tokens priced differently?"
+
+# the full pipeline, with a cited answer
+.\venv\Scripts\python.exe scripts\ask.py --question "how did I keep my API key safe?"
+
+# show the assembled prompt and stop, without calling any model
+.\venv\Scripts\python.exe scripts\ask.py --question "..." --show-prompt
 ```
+
+`retrieve.py` and `ask.py` both accept `--top-k` and `--min-score` to override
+`.env` for one run, and `--no-log` to skip writing to `logs/retrieval.log`.
+`--question` is repeatable on `search_in_memory.py`, `retrieve.py` and `ask.py`.
 
 ## Console encoding
 
@@ -121,9 +161,10 @@ also set the console encoding so the text renders rather than mojibakes:
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 ```
 
-Scripts in `scripts/` are numbered in the order the brief introduces them and
-are meant to be run directly. Each one must work standalone, since they double
-as the demo material for the video.
+Scripts in `scripts/` are named for what they do, not numbered — the pipeline
+order is documented in `structure.md` and in the Running things block above.
+Each one must work standalone, since they double as the demo material for the
+video.
 
 ## Testing
 

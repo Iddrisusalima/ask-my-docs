@@ -12,32 +12,47 @@ ASK-MY-DOCS/
 │   ├── steering/            # these files
 │   ├── specs/ask-my-docs/   # requirements, design, tasks
 │   └── hooks/               # automation
+├── .github/workflows/       # CI: compileall on Python 3.11 and 3.12
 ├── src/                     # importable pipeline modules
 │   ├── __init__.py
+│   ├── console.py           # UTF-8 stdout, so cp1252 cannot crash on a dash
+│   ├── config.py            # reads .env, one place that knows the defaults
+│   ├── loader.py            # read .md, .txt and .pdf from a folder
+│   ├── chunker.py           # overlapping windows, cut on a soft boundary
 │   ├── embedder.py          # text -> embeddings, local or OpenAI
 │   ├── similarity.py        # hand-written cosine similarity
-│   ├── console.py           # UTF-8 stdout, so cp1252 cannot crash on a dash
-│   ├── loader.py            # read .md, .txt and .pdf from a folder
-│   ├── chunker.py           # fixed-size chunks with overlap
-│   ├── store.py             # (Week 2) Chroma wrapper
-│   ├── retriever.py         # (Week 2) question -> top-k chunks
-│   └── generator.py         # (Week 3) context + question -> cited answer
-├── scripts/                 # numbered, runnable, demo-able
-│   ├── embeddings.py
-│   └── chunking.py
-├── notes/                   # the user's written learning log per week
-├── presentation/            # mentor check-in decks + the script that builds them
+│   ├── store.py             # Chroma wrapper, cosine space
+│   ├── retriever.py         # question -> top-k chunks
+│   ├── retrieval_log.py     # append retrieval results to logs/
+│   └── generator.py         # context + question -> cited answer
+├── scripts/                 # runnable, demo-able, one pipeline stage each
+│   ├── embeddings.py        # embeddings and cosine similarity demo
+│   ├── chunking.py          # chunking pipeline, boundary demo, size sweep
+│   ├── search_in_memory.py  # brute-force scan, before the vector DB
+│   ├── ingest.py            # load -> chunk -> embed -> persist to Chroma
+│   ├── retrieve.py          # question -> ranked chunks, no model involved
+│   └── ask.py               # the full pipeline, with --show-prompt
+├── notes/
+│   └── learning-log.md      # the user's learning log, organised by stage
+├── docs/
+│   ├── architecture.drawio          # detailed, for the mentor
+│   ├── architecture-overview.drawio # recruiter-facing
+│   └── screenshots/                 # evidence for README claims
+├── presentation/            # gitignored: decks, demo script, mentor questions
 ├── sample-notes/            # committed test dataset, non-sensitive
-├── logs/                    # gitignored retrieval logs (Week 2 Fri)
+├── logs/                    # gitignored retrieval logs
+├── chroma_db/               # gitignored, rebuilt by ingestion
 ├── venv/                    # gitignored
 ├── .env                     # gitignored, real secrets
 ├── .env.example             # committed template
 ├── requirements.txt
-└── README.md                # written in Week 3
+├── LICENSE                  # MIT
+└── README.md
 ```
 
-Files listed above that do not exist yet are planned, not missing. Create them
-when their week arrives rather than stubbing them early.
+Scripts are ordered above in the sequence the pipeline runs, which is also the
+order they were built. Each one works standalone, since they double as the demo
+material for the video.
 
 ## Where things go
 
@@ -45,8 +60,12 @@ when their week arrives rather than stubbing them early.
   progress messages prefixed like `[embedder]`.
 - **`scripts/`** holds presentation: prints, section headers, formatted tables.
   Scripts orchestrate `src/` modules and own all the narration.
-- **`notes/`** is the user's writing. Add measurements and results here; leave
-  the prose sections for the user (see `learning-guardrails.md`).
+- **`notes/learning-log.md`** is the user's writing, organised by pipeline stage
+  rather than by calendar week. Add measurements and results here; leave the
+  prose sections for the user (see `learning-guardrails.md`).
+- **`docs/`** holds the diagrams and the screenshots the README cites. Every
+  screenshot has a `.txt` transcript beside it so the text is searchable and
+  reviewable without opening an image.
 
 Keeping print formatting out of `src/` is what lets the same retrieval function
 serve the CLI, the logs, and the demo without duplication.
@@ -78,14 +97,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 ## Git
 
-- Commit at the end of each work session, message prefixed with the week and
-  day: `Week 1 Mon-Tue: ...`.
-- Never commit `.env`, `venv/`, `chroma_db/`, `logs/`, or the HF model cache.
+- Commit at the end of each work session, using Conventional Commits:
+  `type(scope): Subject`. The types in use are `feat`, `fix`, `docs`,
+  `refactor`, `test` and `chore`; the scope is the area touched, such as
+  `scripts`, `README` or `repo`. Example:
+  `refactor(scripts): Remove weekday references from terminal output`.
+- Never commit `.env`, `venv/`, `chroma_db/`, `logs/`, `presentation/`, or the
+  HF model cache.
 - `sample-notes/` **is** committed — the mentor must be able to run the tool
   without supplying their own data.
-- The remote repo must be named `ask-my-docs`.
+- The remote is `github.com/Iddrisusalima/ask-my-docs`.
 
 ## Presentation decks
+
+`presentation/` is **gitignored** — it holds the mentor check-in deck, the demo
+video script and the mentor question list, none of which belong in a repo a
+reviewer clones. The files stay on disk; they are simply not part of the
+submission. `.github/workflows/ci.yml` therefore runs `compileall` against
+`src/` and `scripts/` only.
 
 `presentation/build_deck.py` generates `review-deck.pptx` for the mentor
 check-in. Decks are generated from a script rather than hand-edited so that every
