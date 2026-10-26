@@ -15,9 +15,11 @@ screenshotted, pushed, and demonstrated on video. Settings are `CHUNK_SIZE=350`,
 Verified on the committed dataset: 8 of 8 answerable questions answered with
 citations, 2 of 2 unanswerable questions declined.
 
-Six tasks remain open, and five of them are deliberately the user's own work —
-explanations that cannot be written for them without defeating the purpose of
-the project (see `learning-guardrails.md`):
+**Submitted.** The repo, demo video and write-up links were sent to the mentor.
+
+Five tasks remain open, and every one of them is deliberately the user's own
+work — explanations that cannot be written for them without defeating the
+purpose of the project (see `learning-guardrails.md`):
 
 | Task | What is outstanding |
 | ---- | ------------------- |
@@ -26,12 +28,11 @@ the project (see `learning-guardrails.md`):
 | 11.2 | Chroma compared against one alternative |
 | 15.4 | the README "What I Learned" section — drafted, needs rewriting in the user's voice |
 | 16.3 | walking the brief's self-check list out loud |
-| 16.4 | sending the mentor the links |
 
-For each of the five writing tasks, the measurements, tables and mechanical
-facts are already supplied in `notes/learning-log.md`. What is missing is the
-argument, which has to be the user's — a follow-up question in the demo would
-expose borrowed wording immediately.
+For each, the measurements, tables and mechanical facts are already supplied in
+`notes/learning-log.md`. What is missing is the argument, which has to be the
+user's — a follow-up question in the review would expose borrowed wording
+immediately.
 
 ---
 
@@ -317,7 +318,7 @@ expose borrowed wording immediately.
   - the question list is in `presentation/mentor-questions.md`; work through it
     without looking at the answers
   - _Requirements: 11.3_
-- [ ] 16.4 Send the mentor the repo link and the video link before 11:59 PM
-  - also worth sending: the write-up at
+- [x] 16.4 Send the mentor the repo link and the video link before 11:59 PM
+  - sent, along with the write-up at
     `dev.to/salima_iddrisu/my-rag-tool-refused-to-answer-a-question-my-notes-clearly-answered-aho`
   - _Requirements: 12.6_
