@@ -18,16 +18,16 @@
           <mxGeometry x="60" y="150" width="300" height="640" as="geometry" />
         </mxCell>
 
-        <mxCell id="notes" value="sample-notes/&#10;5 markdown files, 79,581 chars" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="notes" value="sample-notes/&#10;9 files, 4 formats, 85,567 chars" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="100" y="200" width="220" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="loader" value="loader.py&#10;read .md .txt .pdf" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="loader" value="loader.py&#10;.md .txt .pdf .docx .csv&#10;per file / per page / per row" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="100" y="300" width="220" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="chunker" value="chunker.py&#10;350 chars, 70 overlap" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="chunker" value="chunker.py&#10;350 chars, 70 overlap&#10;short PDF pages merged" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="100" y="400" width="220" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="embed-ingest" value="embedder.py&#10;317 chunks x 384 numbers" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="embed-ingest" value="embedder.py&#10;343 chunks x 384 numbers" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="100" y="500" width="220" height="55" as="geometry" />
         </mxCell>
         <mxCell id="store" value="store.py - Chroma&#10;on disk, cosine distance" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=14;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">

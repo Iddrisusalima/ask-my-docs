@@ -21,7 +21,7 @@
           <mxGeometry x="70" y="190" width="300" height="34" as="geometry" />
         </mxCell>
 
-        <mxCell id="docs" value="&lt;b&gt;Documents&lt;/b&gt;&#10;&#10;Markdown and PDF&#10;&lt;font color=&quot;#55606E&quot;&gt;79.6k characters&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EEF3F8;strokeColor=#1C4E7A;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="docs" value="&lt;b&gt;Documents&lt;/b&gt;&#10;&#10;Markdown, PDF, Word, CSV&#10;&lt;font color=&quot;#55606E&quot;&gt;85.6k characters&lt;/font&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EEF3F8;strokeColor=#1C4E7A;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="70" y="240" width="250" height="100" as="geometry" />
         </mxCell>
 
@@ -33,7 +33,7 @@
           <mxGeometry x="730" y="240" width="250" height="100" as="geometry" />
         </mxCell>
 
-        <mxCell id="store" value="&lt;b&gt;Vector Store&lt;/b&gt;&#10;&#10;Chroma, cosine space&#10;&lt;font color=&quot;#55606E&quot;&gt;317 chunks, persisted&lt;/font&gt;" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#FDF4E6;strokeColor=#B56E0C;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="store" value="&lt;b&gt;Vector Store&lt;/b&gt;&#10;&#10;Chroma, cosine space&#10;&lt;font color=&quot;#55606E&quot;&gt;343 chunks, persisted&lt;/font&gt;" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#FDF4E6;strokeColor=#B56E0C;strokeWidth=2;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="1060" y="235" width="250" height="115" as="geometry" />
         </mxCell>
 
