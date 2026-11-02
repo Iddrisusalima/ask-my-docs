@@ -918,13 +918,13 @@ warning sign worth checking.
 
 ## 8. Source citations
 
-_(partly done as part of Mon–Tue; still to verify across more questions)_
-
 - [x] passage numbers resolved back to filename and chunk id
 - [x] PDF citations carry the page number, e.g. `notes.pdf#3 (p.2)`
 - [x] similarity score shown beside each source
 - [x] cited vs offered-but-unused marked separately
-- [ ] open the source files and confirm every citation across 10 questions
+- [x] opened the source files and confirmed every citation across 10 questions
+- [x] extended to four citation shapes once other formats were added — see
+      section 11: chunk only, single page, page range, CSV row
 
 ---
 
@@ -1059,21 +1059,29 @@ answer is a property of the documents, not a universal constant.
 
 ## 10. Documentation and submission
 
-_(not started)_
-
 ### README checklist, from the brief
 
-- [ ] one paragraph on what the tool does and the dataset used
-- [ ] setup instructions, including how to add your own documents
+- [x] one paragraph on what the tool does and the dataset used
+- [x] setup instructions, including how to add your own documents
 - [ ] "What I Learned" — embeddings, chunking, the pipeline, **in my own words**
-- [ ] chosen chunk size and top-k, with the reasoning
-- [ ] screenshot of a real question, answer and cited source
+      — the section exists but is not yet in my own words, which is the point of
+      it. Still mine to rewrite.
+- [x] chosen chunk size and top-k, with the reasoning
+- [x] screenshot of a real question, answer and cited source
 
 ### Demo video, 3–4 minutes
 
-- [ ] show ingestion
-- [ ] ask 2–3 questions live
-- [ ] explain what happens at each stage
+- [x] show ingestion
+- [x] ask 2–3 questions live
+- [x] explain what happens at each stage
+
+Recorded at 3:30 and linked from the README.
+
+### After the mentor review
+
+- [x] test with formats other than Markdown — PDF, `.docx` and `.csv`, section 11
+- [ ] re-record the demo to show a PDF and a CSV being ingested and cited —
+      the current video only shows Markdown
 
 ---
 
@@ -1094,3 +1102,183 @@ One lesson from using the project's own docs as a stand-in: the corpus was
 *self-modifying*. Editing the spec files changed the thing being measured, and the
 chunk count drifted from 159 to 171 during the week with no code change. A fixed
 dataset is not a nicety.
+
+---
+
+## 11. Formats other than Markdown
+
+Code: `src/loader.py`, `src/chunker.py`
+
+Raised in the mentor review: the tool had only ever been run against Markdown.
+Real documents arrive as PDF, Word and spreadsheets, and none of those had been
+tested.
+
+The loader already had a PDF path written, including per-page handling and
+OCR detection, so this was not missing code. It was **untested** code and a
+dataset that could not exercise it — `sample-notes/` held five `.md` files and
+nothing else. Untested is worse than missing, because untested code looks
+finished.
+
+### What the first real PDF revealed
+
+Two PDFs were loaded as a test: a 31-page lecture deck and a 5-page prose
+document.
+
+Extraction itself was correct. The text came back with 144 bullets, 27 en
+dashes, 4 em dashes and a curly apostrophe, all as proper Unicode, and no
+double-encoded sequences anywhere.
+
+That part needed checking carefully, because the first run *looked* broken —
+bullets printed as `ΓÇó`. That was the Windows console rendering correct UTF-8
+through the wrong code page, not `pypdf` returning rubbish. Two completely
+different problems that are indistinguishable in a terminal. Counting the actual
+code points settled it.
+
+### The real finding: one chunk size does not fit every format
+
+Each format has a different natural unit, and the sizes are nowhere near each
+other:
+
+| Format | Unit | Characters per unit |
+| ------ | ---- | ------------------- |
+| `.csv` | one row | 180 |
+| `.pdf` | one page | 383 (lecture deck alone: 223) |
+| `.docx` | whole file | 1,636 |
+| `.md` | whole file | 15,916 |
+
+Roughly 90x between a CSV row and a Markdown file. `CHUNK_SIZE=350` was chosen
+against files of 8–34 KB, where a chunk is always full. A 223-character slide
+page cannot fill a 350-character chunk, and because documents are chunked
+independently, pages can never combine to help.
+
+Measured on the lecture deck at 350/70: smallest chunk 47 characters, 38% of
+chunks under 200.
+
+A chunk holding one slide title embeds as a position describing almost nothing.
+It is too small to answer anything and it still occupies a slot in the top-k.
+
+### The fix, and what it bought
+
+`merge_short_pages` in `src/chunker.py` joins consecutive short pages from the
+same PDF until they approach `chunk_size`, and the citation becomes a page
+*range*. CSV rows are explicitly never merged — joining two records would
+produce a chunk describing neither.
+
+On the committed dataset, PDFs only:
+
+| | Unmerged | Merged |
+| --- | --- | --- |
+| chunks | 18 | 14 |
+| smallest | 83 | 154 |
+| mean | 226 | 292 |
+| under 200 characters | 44% | 7% |
+
+Three page runs merged: 1–2, 3–5, 6–7.
+
+### Writing that fix exposed a bug in my own first attempt
+
+The first version worked out page ranges by counting `\n\n` occurrences before
+the chunk's offset. That is wrong, and not marginally: a blank line that was
+already inside a page is indistinguishable from one inserted between two pages,
+so any page with paragraphs of its own would push the range badly off.
+
+Replaced with exact `(start, end, page)` offsets recorded *while* the pages are
+being joined — the only moment the mapping is still known. Afterwards it is
+genuinely unrecoverable from the text.
+
+### Then the size statistics lied again
+
+The chunk size sweep said 500 was clearly better than 350 for PDFs — 2% of
+chunks under 200 characters instead of 24%, before merging — and no worse for
+Markdown. On the numbers, an obvious change to make.
+
+So I ingested both and asked the same seven questions of each, one per format,
+each targeting a fact that appears in only one file so the top hit proves which
+document answered.
+
+| Question | 350/70 | 500/100 |
+| -------- | ------ | ------- |
+| embedding throughput (PDF prose) | **0.7275** | 0.6834 |
+| scan vs index agreement (PDF prose) | 0.6535 | **0.6897** |
+| keyword vs semantic (PDF slides) | **0.6157** | 0.4296 |
+| why top-k is five (PDF slides) | **0.6561** | 0.3923 |
+| the 900-character failure (docx) | **0.7399** | 0.6799 |
+| what a 0.40 floor did (csv) | 0.4819 | 0.4819 |
+| capital of Peru (unanswerable) | **0.1659** | 0.2028 |
+| **mean top score** | **0.5772** | 0.5085 |
+
+Both resolved 7 of 7 to the correct source. But 500 is far weaker on the slide
+deck, and the reason is visible in its citations: `pp.1-4` and `pp.5-7` instead
+of `pp.1-2` and `pp.3-5`. A larger chunk size merges more pages, which
+reintroduces exactly the dilution that 900-character chunks caused on Markdown.
+The unanswerable question also scored *higher* at 500 — 0.2028 against 0.1659 —
+moving the wrong way.
+
+`CHUNK_SIZE` stays at 350. The page merge was the actual fix, not the number.
+
+**Second time the same lesson has cost me a day.** A size distribution is not a
+quality measurement. The first time it was chunk counts and mean lengths; this
+time it was the percentage of chunks under 200 characters. Both looked like
+evidence. Only the questions were.
+
+### How each format is split, and why
+
+- **Markdown, text, `.docx` → one document per file.** Continuous prose with no
+  internal landmark worth citing.
+- **PDF → one document per page.** Page numbers exist for free at load time and
+  mean something to a reader opening the file. This is the decision that caused
+  the short-page problem, and it is still the right one — the fix belongs in the
+  chunker, not in throwing page numbers away.
+- **CSV → one document per row.** A row is a record. Flattening a sheet into
+  prose and cutting it every 350 characters produces chunks straddling unrelated
+  records, describing none of them. Column names are repeated into every row, so
+  `chunk_size: 350` is embedded rather than a bare `350`.
+
+`.docx` deliberately carries **no page number**. A Word file does not store
+pagination — it is computed by whatever renders it, from font metrics and page
+size. A page number there would be invented, and a citation nothing can verify
+is worse than no citation.
+
+### Citation shapes now in use
+
+```
+project1-learnings.md#51              markdown or .docx, chunk number only
+pipeline-report.pdf#1 (p.1)           a single PDF page
+pipeline-slides.pdf#2 (pp.6-7)        short PDF pages, merged
+measurements.csv#4 (r.5)              one CSV row
+```
+
+### The committed dataset
+
+Nine files, 85,567 characters, 343 chunks:
+
+| File | Format | Unit count |
+| ---- | ------ | ---------- |
+| 5 × `project1-*.md` | Markdown | 5 whole files |
+| `pipeline-report.pdf` | PDF, prose | 1 page |
+| `pipeline-slides.pdf` | PDF, slides | 8 pages |
+| `retrieval-settings.docx` | Word, includes a 4×3 table | 1 whole file |
+| `measurements.csv` | CSV | 5 rows |
+
+The PDFs used while developing this were a university lecture deck and the
+programme's own project brief. Neither belongs in a public repository, so the
+committed files were generated from this project's own measurements instead.
+Each one carries at least one figure that appears nowhere else in the dataset,
+which is what makes the per-format retrieval test meaningful — the top hit
+proves which document answered.
+
+The `.docx` includes a table on purpose. Table cells are the content a loader is
+most likely to drop silently, and a dataset without one would never reveal
+whether they were handled. 11 cells are picked up, reported in the load summary.
+
+### End-to-end check
+
+| Format | Citation returned | Score |
+| ------ | ----------------- | ----- |
+| PDF, prose | `pipeline-report.pdf#1 (p.1)` | 0.7275 |
+| PDF, merged slide pages | `pipeline-slides.pdf#2 (pp.6-7)` | 0.6157 |
+| `.docx` | `retrieval-settings.docx#3` | 0.7399 |
+| `.csv` | `measurements.csv#4 (r.5)` | 0.4776 |
+| unanswerable | declined, nothing cited | 0.1659 best match |
+
+HNSW agreement with the exact scan is still 10 of 10 after the change.

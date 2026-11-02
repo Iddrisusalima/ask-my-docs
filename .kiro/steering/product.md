@@ -60,9 +60,14 @@ Settled by measurement, not guesswork: `CHUNK_SIZE=350`, `CHUNK_OVERLAP=70`,
 `TOP_K=5`, and `MIN_SCORE` deliberately left empty. The reasoning for each is
 in `.env.example` and `notes/learning-log.md`.
 
-Verified on the committed dataset of 5 notes, 79,581 characters, 317 chunks:
+Verified on the committed dataset of 9 files, 85,567 characters, 343 chunks:
 8 of 8 answerable questions answered with citations, 2 of 2 unanswerable
 questions declined.
+
+After the mentor review the dataset was made deliberately mixed-format —
+markdown, two PDFs, a Word document and a CSV — because Markdown alone could not
+exercise the PDF path or expose the short-page chunking problem. See section 11
+of `notes/learning-log.md`.
 
 Also done: README with architecture diagram and a "What I Learned" section,
 6 screenshots in `docs/screenshots/`, two draw.io diagrams, MIT licence, CI
@@ -79,7 +84,8 @@ in the demo would expose borrowed phrasing immediately.
 
 - [x] Public GitHub repo named `ask-my-docs`
 - [x] A committed `sample-notes/` folder of non-sensitive documents so the
-      mentor can run the tool unmodified — 5 notes, 79,581 characters
+      mentor can run the tool unmodified — 9 files across 4 formats,
+      85,567 characters
 - [x] README covering: what the tool does and the dataset, setup instructions,
       a "What I Learned" section in the user's own words, the chosen chunk size
       and top-k with reasoning, and a screenshot of a real question, answer and

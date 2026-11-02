@@ -1,0 +1,80 @@
+# Three formats, three kinds of citation: a merged PDF page range, a Word file, and a CSV row
+
+[ask] 343 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
+Q: how did keyword search compare with semantic search?
+   retrieved 5 passage(s)
+   1. 0.6157  pipeline-slides.pdf#2 (pp.6-7) Keyword search, for comparison • agreed with
+   semantic s...
+   2. 0.5026  pipeline-report.pdf#5 (p.1)    skips most comparisons, which is exactly where the
+   spee...
+   3. 0.4001  pipeline-report.pdf#3 (p.1)    ious, and caution is the one thing a project like
+   this ...
+   4. 0.3708  pipeline-report.pdf#6 (p.1)    less. The two were compared on ten questions
+   against th...
+   5. 0.3279  pipeline-report.pdf#9 (p.1)    malise its output is used, at which point retrieval
+   qui...
+==========================================================================
+ANSWER
+==========================================================================
+Keyword search agreed with semantic search on 0 of 3 top results, with every candidate tied at
+0.2857, meaning its ranking carried no information [1].
+SOURCES
+  [1] cited  0.6157  pipeline-slides.pdf#2 (pp.6-7)
+  [2]   -    0.5026  pipeline-report.pdf#5 (p.1)
+  [3]   -    0.4001  pipeline-report.pdf#3 (p.1)
+  [4]   -    0.3708  pipeline-report.pdf#6 (p.1)
+  [5]   -    0.3279  pipeline-report.pdf#9 (p.1)
+  4 of 5 passages went unused. If that keeps
+  happening, top-k is higher than it needs to be.
+  model: gemini-3.5-flash-lite
+Q: at 900 characters what happened to the API key safety question?
+   retrieved 5 passage(s)
+   1. 0.7399  retrieval-settings.docx#3      . Nothing reported an error. The opposite failure
+   at 90...
+   2. 0.5603  project1-overview.md#70        valid key, to confirm the tool explains itself
+   rather t...
+   3. 0.5075  retrieval-settings.docx#6      e pages hold two hundred characters wants something
+   dif...
+   4. 0.4981  project1-learnings.md#51       s my tool survive a bad or missing API key?** Yes,
+   and ...
+   5. 0.4572  project1-build-log.md#90       an unanswered user turn, which breaks the shape of
+   the ...
+==========================================================================
+ANSWER
+==========================================================================
+At 900 characters, the API key safety question was either absorbed into an unrelated chunk and
+diluted, or refused [1][3].
+SOURCES
+  [1] cited  0.7399  retrieval-settings.docx#3
+  [2]   -    0.5603  project1-overview.md#70
+  [3] cited  0.5075  retrieval-settings.docx#6
+  [4]   -    0.4981  project1-learnings.md#51
+  [5]   -    0.4572  project1-build-log.md#90
+  3 of 5 passages went unused. If that keeps
+  happening, top-k is higher than it needs to be.
+  model: gemini-3.5-flash-lite
+Q: what did a relevance floor of 0.40 do to the real questions?
+   retrieved 5 passage(s)
+   1. 0.4819  measurements.csv#2 (r.3)       floor: 0.30 | passages_q1: 5 | passages_q2: 3 |
+   passage...
+   2. 0.4776  measurements.csv#4 (r.5)       floor: 0.40 | passages_q1: 5 | passages_q2: 0 |
+   passage...
+   3. 0.4714  pipeline-slides.pdf#1 (pp.3-5) Why top-k is 5 • k=10 cost 3.4x the context • for a
+   0.0...
+   4. 0.4535  retrieval-settings.docx#0      Chunk size: what each setting did to real answers
+   Chunk...
+   5. 0.4314  measurements.csv#1 (r.2)       floor: 0.25 | passages_q1: 5 | passages_q2: 5 |
+   passage...
+==========================================================================
+ANSWER
+==========================================================================
+A relevance floor of 0.40 caused two real questions to return nothing at all [2].
+SOURCES
+  [1]   -    0.4819  measurements.csv#2 (r.3)
+  [2] cited  0.4776  measurements.csv#4 (r.5)
+  [3]   -    0.4714  pipeline-slides.pdf#1 (pp.3-5)
+  [4]   -    0.4535  retrieval-settings.docx#0
+  [5]   -    0.4314  measurements.csv#1 (r.2)
+  4 of 5 passages went unused. If that keeps
+  happening, top-k is higher than it needs to be.
+  model: gemini-3.5-flash-lite

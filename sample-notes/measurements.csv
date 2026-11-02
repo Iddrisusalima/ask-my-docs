@@ -1,0 +1,6 @@
+floor,passages_q1,passages_q2,passages_q3,passages_q4,passages_unanswerable,outcome
+off,5,5,5,5,5,"every question keeps all five passages, including the unanswerable one"
+0.25,5,5,5,5,4,barely filters anything; the bad question still retrieves four passages
+0.30,5,3,5,5,2,starts costing a real question two of its passages
+0.35,5,2,2,4,0,silences the unanswerable question but strips two real ones down to two passages
+0.40,5,0,0,1,0,two real questions return nothing at all

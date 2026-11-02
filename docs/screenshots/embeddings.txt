@@ -22,7 +22,7 @@ PART 2  Input length changes nothing about output length
 Same budget of numbers for 7 characters and 200+. A long document
 therefore gets *averaged out* into that same fixed space, blurring the
 detail. That is precisely why we split documents into chunks before
-embedding them (coming up Wed-Thu).
+embedding them - the next stage.
 ====================================================================
 PART 3  Similar sentences vs unrelated sentences
 ====================================================================
@@ -71,5 +71,5 @@ One caveat to remember: these scores are only comparable to each other.
 0.62 is not universally 'quite similar' - it depends on the model. Judge
 candidates by their ranking against each other, never by a fixed cutoff.
 ====================================================================
-Done. Next: Wed-Thu, splitting real documents into chunks.
+Done. Next: splitting real documents into chunks.
 ====================================================================

@@ -265,8 +265,8 @@ def main() -> int:
     print(
         "\nNote the distance-to-similarity conversion above: cosine distance 0.0 means\n"
         "identical direction, so similarity = 1 - distance puts these back on the original\n"
-        "scale where higher is better. src/retriever.py does this conversion once, on\n"
-        "Wednesday, so nothing downstream has to remember which way round it is."
+        "scale where higher is better. src/retriever.py does this conversion once, at the\n"
+        "boundary, so nothing downstream has to remember which way round it is."
     )
 
     rule("Done")

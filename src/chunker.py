@@ -71,7 +71,10 @@ class Chunk:
         chunk_index: 0-based position within its source file.
         start_char: Character offset within the source document, useful for
             locating the passage in the original.
-        page: PDF page number, or None.
+        page: First PDF page this passage came from, or None.
+        page_end: Last PDF page, when short pages were merged into one chunk.
+            None when the chunk sits on a single page.
+        row: CSV row number, or None.
     """
 
     chunk_id: str
@@ -80,12 +83,29 @@ class Chunk:
     chunk_index: int
     start_char: int
     page: int | None = None
+    page_end: int | None = None
+    row: int | None = None
 
     def citation(self) -> str:
-        """How this chunk is referred to in an answer's sources list."""
-        if self.page is None:
-            return self.chunk_id
-        return f"{self.chunk_id} (p.{self.page})"
+        """How this chunk is referred to in an answer's sources list.
+
+        The suffix names whichever landmark the source format provided, so a
+        reader can find the passage in the original file:
+
+            notes.md#3                 markdown or .docx - chunk number only
+            guide.pdf#7 (p.4)          one PDF page
+            slides.pdf#2 (pp.3-5)      several short PDF pages, merged
+            settings.csv#0 (r.12)      one CSV row
+        """
+        if self.page is not None:
+            if self.page_end is not None and self.page_end != self.page:
+                return f"{self.chunk_id} (pp.{self.page}-{self.page_end})"
+            return f"{self.chunk_id} (p.{self.page})"
+
+        if self.row is not None:
+            return f"{self.chunk_id} (r.{self.row})"
+
+        return self.chunk_id
 
     def preview(self, width: int = 80) -> str:
         """Single-line excerpt for logs and terminal output."""
@@ -238,11 +258,123 @@ def chunk_text(
     return [piece for piece in pieces if piece.strip()]
 
 
+def merge_short_pages(
+    documents: list[LoadedDocument],
+    chunk_size: int,
+) -> tuple[list[LoadedDocument], list[tuple[int, int]]]:
+    """Join consecutive short PDF pages from the same file into one unit.
+
+    Why this exists
+    ---------------
+    The loader splits a PDF into one document per page so that citations can
+    name a page. That is the right trade for citations and the wrong one for
+    chunk size, because documents are chunked independently and therefore can
+    never merge. A slide deck averaging 223 characters per page produces
+    223-character chunks however large `chunk_size` is set - measured on a real
+    31-page lecture deck, 38% of chunks came out under 200 characters with the
+    smallest at 47.
+
+    That matters because a chunk holding one slide title embeds as a position
+    describing almost nothing. It is too small to answer a question and it
+    occupies a slot in the top-k that a fuller passage could have used.
+
+    Merging consecutive pages up to `chunk_size` restores the size the setting
+    was tuned for, and the citation becomes a page *range* rather than a single
+    page, which is still something a reader can act on.
+
+    Only PDFs are affected. Markdown, .docx and CSV rows have no page numbers,
+    so they pass through untouched - and CSV rows must never be merged, since
+    joining two records would produce a chunk describing neither.
+
+    Args:
+        documents: Output of `load_documents`.
+        chunk_size: The size merged pages are allowed to approach.
+
+    Returns:
+        The documents with short consecutive pages combined, and a list of
+        (first_page, last_page) pairs recording which runs were merged - used
+        by the demo script to show what the fix actually did.
+    """
+    merged: list[LoadedDocument] = []
+    ranges: list[tuple[int, int]] = []
+
+    # A page is "short" if it could not fill a chunk on its own. Merging pages
+    # that are already full-size would only create oversized units that the
+    # chunker has to cut again, moving the boundary problem rather than fixing it.
+    buffer: list[LoadedDocument] = []
+
+    def flush() -> None:
+        """Emit whatever is in the buffer as a single document."""
+        if not buffer:
+            return
+
+        if len(buffer) == 1:
+            merged.append(buffer[0])
+            buffer.clear()
+            return
+
+        first, last = buffer[0], buffer[-1]
+
+        # Blank line between pages so the chunker's paragraph-boundary search
+        # can still prefer a page break as a cut point. The offsets of each
+        # page within the combined text are recorded as they are built, because
+        # afterwards they are unrecoverable - an inserted blank line is
+        # indistinguishable from one that was already inside a page.
+        separator = "\n\n"
+        pieces: list[str] = []
+        spans: list[tuple[int, int, int]] = []
+        position = 0
+
+        for document in buffer:
+            spans.append((position, position + len(document.text), document.page))
+            pieces.append(document.text)
+            position += len(document.text) + len(separator)
+
+        merged.append(
+            LoadedDocument(
+                source=first.source,
+                path=first.path,
+                text=separator.join(pieces),
+                page=first.page,
+                page_spans=tuple(spans),
+            )
+        )
+        ranges.append((first.page, last.page))
+        buffer.clear()
+
+    for document in documents:
+        if document.page is None:
+            flush()
+            merged.append(document)
+            continue
+
+        if buffer and buffer[0].source != document.source:
+            flush()
+
+        pending = sum(len(item.text) for item in buffer)
+        separators = 2 * len(buffer)
+
+        if buffer and pending + separators + len(document.text) > chunk_size:
+            flush()
+
+        buffer.append(document)
+
+        # A single page that already fills a chunk has nothing to gain from
+        # waiting for a neighbour.
+        if len(document.text) >= chunk_size:
+            flush()
+
+    flush()
+
+    return merged, ranges
+
+
 def chunk_documents(
     documents: list[LoadedDocument],
     chunk_size: int = 500,
     overlap: int = 100,
     soften_boundaries: bool = True,
+    merge_pages: bool = True,
 ) -> list[Chunk]:
     """Chunk a whole corpus, attaching citation metadata to every piece.
 
@@ -251,11 +383,18 @@ def chunk_documents(
         chunk_size: Maximum characters per chunk.
         overlap: Characters repeated between consecutive chunks.
         soften_boundaries: Prefer paragraph, sentence, or word boundaries.
+        merge_pages: Combine consecutive short PDF pages before chunking, so a
+            slide deck does not produce chunks far below `chunk_size`. Pass
+            False to see the unmerged behaviour, which the demo script does in
+            order to show the difference.
 
     Returns:
         Every chunk from every document, in order. Whitespace-only chunks are
         dropped so they never reach the embedder, which rejects empty input.
     """
+    if merge_pages:
+        documents, _ = merge_short_pages(documents, chunk_size)
+
     chunks: list[Chunk] = []
 
     # Chunk numbering runs per source *file*, not per LoadedDocument, so that a
@@ -264,7 +403,9 @@ def chunk_documents(
     next_index: dict[str, int] = {}
 
     for document in documents:
-        for start, end in chunk_spans(document.text, chunk_size, overlap, soften_boundaries):
+        spans = chunk_spans(document.text, chunk_size, overlap, soften_boundaries)
+
+        for start, end in spans:
             piece = document.text[start:end]
 
             if not piece.strip():
@@ -273,6 +414,8 @@ def chunk_documents(
             index = next_index.get(document.source, 0)
             next_index[document.source] = index + 1
 
+            page_start, page_end = _pages_covered(document, start, end)
+
             chunks.append(
                 Chunk(
                     chunk_id=f"{document.source}#{index}",
@@ -280,11 +423,49 @@ def chunk_documents(
                     source=document.source,
                     chunk_index=index,
                     start_char=start,
-                    page=document.page,
+                    page=page_start,
+                    page_end=page_end,
+                    row=document.row,
                 )
             )
 
     return chunks
+
+
+def _pages_covered(
+    document: LoadedDocument,
+    start: int,
+    end: int,
+) -> tuple[int | None, int | None]:
+    """Which pages a chunk at [start, end) actually came from.
+
+    Uses the exact page offsets recorded during the merge rather than guessing
+    from the text, so the page range in a citation is correct even when a page
+    contained blank lines of its own.
+
+    Returns:
+        (first_page, last_page). Both None for a document with no pages.
+        `last_page` equals `first_page` when the chunk sits on one page.
+    """
+    if document.page is None:
+        return None, None
+
+    if not document.page_spans:
+        return document.page, document.page
+
+    touched = [
+        page
+        for span_start, span_end, page in document.page_spans
+        if span_start < end and span_end > start
+    ]
+
+    if not touched:
+        # The chunk falls entirely inside a separator, which should not happen
+        # for a non-empty chunk. Fall back to the document's first page rather
+        # than returning nothing and losing the citation.
+        return document.page, document.page
+
+    return min(touched), max(touched)
 
 
 def chunk_statistics(chunks: list[Chunk]) -> dict[str, float]:

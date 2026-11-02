@@ -311,9 +311,12 @@ def _metadata_for(chunk: Chunk) -> dict:
     """Flatten a Chunk's provenance into Chroma-safe metadata.
 
     Chroma accepts only str, int, float and bool values - a None is rejected
-    outright. Since `page` is None for markdown, the key is omitted rather than
-    given a sentinel like -1, which would later have to be remembered and
-    translated back.
+    outright. Since `page` is None for markdown and `row` is None for
+    everything except CSVs, those keys are omitted rather than given a sentinel
+    like -1, which would later have to be remembered and translated back.
+
+    Which keys are present therefore tells you what the source format was:
+    `page` for a PDF, `row` for a CSV, neither for markdown or .docx.
     """
     metadata: dict[str, str | int | float | bool] = {
         "source": chunk.source,
@@ -323,6 +326,15 @@ def _metadata_for(chunk: Chunk) -> dict:
 
     if chunk.page is not None:
         metadata["page"] = chunk.page
+
+        # Only stored when it adds information. A chunk sitting on one page has
+        # page_end equal to page, and duplicating it in every record would make
+        # the metadata harder to read for no gain.
+        if chunk.page_end is not None and chunk.page_end != chunk.page:
+            metadata["page_end"] = chunk.page_end
+
+    if chunk.row is not None:
+        metadata["row"] = chunk.row
 
     return metadata
 
@@ -345,6 +357,8 @@ def _to_matches(result: dict) -> list[StoredMatch]:
             chunk_index=int(metadata.get("chunk_index", 0)),
             start_char=int(metadata.get("start_char", 0)),
             page=int(metadata["page"]) if "page" in metadata else None,
+            page_end=int(metadata["page_end"]) if "page_end" in metadata else None,
+            row=int(metadata["row"]) if "row" in metadata else None,
         )
         matches.append(StoredMatch(chunk=chunk, distance=float(distance)))
 

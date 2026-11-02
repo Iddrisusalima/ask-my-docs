@@ -1,6 +1,6 @@
 # The exact prompt sent to the model, printed without calling the API
 
-[ask] 317 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
+[ask] 343 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
 Q: what is a context window measured in?
    retrieved 5 passage(s)
    1. 0.6113  project1-learnings.md#12       d at that point you have to start dropping or

@@ -1,6 +1,6 @@
 # A question the notes cannot answer - the tool declines instead of inventing
 
-[ask] 317 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
+[ask] 343 chunks · top_k=5 · min_score=None · local:sentence-transformers/all-MiniLM-L6-v2
 Q: What is the capital of Peru?
    retrieved 5 passage(s)
    1. 0.1659  project1-overview.md#40        de costs nothing. --- ## Installation ### 1. Clone

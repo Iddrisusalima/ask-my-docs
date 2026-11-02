@@ -40,6 +40,9 @@ out by hand with no RAG framework involved.
   - [Command line flags](#command-line-flags)
   - [Using your own documents](#using-your-own-documents)
 - [Key concepts](#key-concepts)
+- [Formats, and how each one is split](#formats-and-how-each-one-is-split)
+  - [What testing a real PDF changed](#what-testing-a-real-pdf-changed)
+  - [Why the chunk size did not change](#why-the-chunk-size-did-not-change)
 - [Settings, and why](#settings-and-why)
   - [Why the chunk size changed from 500 to 350](#why-the-chunk-size-changed-from-500-to-350)
 - [Verification](#verification)
@@ -63,9 +66,12 @@ out by hand with no RAG framework involved.
 
 ![A real question, its answer, and the cited sources](docs/screenshots/answer-with-citations.png)
 
-The dataset is five of my own write-ups from a previous project — 79,581
-characters of markdown, committed to `sample-notes/` so the tool can be run
-without supplying your own documents.
+The dataset in `sample-notes/` is committed, so the tool can be run without
+supplying your own documents. It is deliberately mixed-format: five of my own
+write-ups from a previous project, two PDFs, a Word document and a CSV — nine
+files, 85,567 characters, 343 chunks. Markdown alone could not have exposed the
+chunking problem described under
+[Formats](#formats-and-how-each-one-is-split).
 
 Two things in that screenshot are worth more than the answer itself. The
 `cited` markers show which passages the model actually leaned on, not merely
@@ -109,13 +115,17 @@ quietest failure into a message.
 
 ### Components
 
-- **Document loader** (`src/loader.py`) — reads `.md`, `.txt` and `.pdf` from a
-  folder, recursing into subfolders. PDFs produce one document *per page*, so
-  page numbers survive into citations. A single unreadable file warns by name and
-  is skipped rather than aborting the run.
+- **Document loader** (`src/loader.py`) — reads `.md`, `.txt`, `.pdf`, `.docx`
+  and `.csv` from a folder, recursing into subfolders. Each format is split at
+  the boundary its own structure provides, because that choice decides what a
+  citation can say: a PDF becomes one document *per page*, a CSV one *per row*,
+  everything else one per file. A single unreadable file warns by name and is
+  skipped rather than aborting the run.
 - **Chunker** (`src/chunker.py`) — fixed-size character windows with overlap. Cut
   points scan backwards a bounded distance for a paragraph break, then a sentence
-  ending, then any whitespace, so a chunk never ends mid-word.
+  ending, then any whitespace, so a chunk never ends mid-word. Consecutive short
+  PDF pages are merged first, so a slide deck does not produce chunks far below
+  the configured size.
 - **Embedder** (`src/embedder.py`) — wraps a local Sentence Transformers model and
   any OpenAI-compatible API behind one interface, chosen by a single environment
   variable. Loads lazily and batches by default.
@@ -180,7 +190,8 @@ scripts/
   ask.py                 Stage 6: the full pipeline, question to cited answer
 
 src/
-  loader.py              Read .md .txt .pdf, keep filename and page number
+  loader.py              Read .md .txt .pdf .docx .csv, keep the landmark each
+                         format provides: page number, row number, or neither
   chunker.py             Fixed-size chunks with overlap and softened boundaries
   embedder.py            Text to embeddings, local or OpenAI-compatible
   similarity.py          Cosine similarity, written by hand
@@ -200,7 +211,8 @@ README.md                This file
 notes/
   learning-log.md        Every measurement, by pipeline stage, including the
                          things I got wrong and had to change
-sample-notes/            The committed test dataset — five of my own write-ups
+sample-notes/            The committed test dataset — mixed format on purpose:
+                         markdown, two PDFs, a Word file and a CSV
 docs/
   architecture-overview.drawio   Editable source for the diagram above
   architecture.drawio            One question end to end, with the measurements
@@ -375,7 +387,8 @@ is a claim; the printed prompt is evidence.
 
 ### Using your own documents
 
-1. Put `.md`, `.txt` or `.pdf` files in `sample-notes/`, or any folder you like.
+1. Put `.md`, `.txt`, `.pdf`, `.docx` or `.csv` files in `sample-notes/`, or any
+   folder you like.
 2. Re-run ingestion with `--folder` pointing at it.
 3. Ask away.
 
@@ -413,13 +426,90 @@ keyword baseline on the same corpus returned three results tied at exactly
 everything. The counterintuitive part: Chroma's index is *approximate* — it skips
 comparisons deliberately — so it is **less** accurate than the brute-force loop it
 replaces, and far more scalable. It agreed with the exact scan 10/10 here, which
-is expected at 317 chunks rather than proof the approximation is free.
+is expected at 343 chunks rather than proof the approximation is free.
 → [Read more](notes/learning-log.md#4-the-vector-database)
 
 **Grounded generation** is the stage where a correct retrieval can still produce
 a wrong answer, because nothing in the plumbing stops the model replying from its
 own knowledge. Only the prompt does.
 → [Read more](notes/learning-log.md#7-grounded-generation)
+
+---
+
+## Formats, and how each one is split
+
+Every format arrives with its own natural unit, and the unit decides what a
+citation can say. The choice has to be made at load time — a page number cannot
+be recovered later from a character offset.
+
+| Format | Split into | Citation looks like | Why |
+| --- | --- | --- | --- |
+| `.md`, `.txt` | one document per file | `notes.md#51` | continuous prose, no internal landmark worth citing |
+| `.pdf` | one document per **page** | `report.pdf#1 (p.1)` | page numbers exist for free at load time and mean something to a reader opening the file |
+| `.docx` | one document per file | `settings.docx#3` | a Word file stores no pagination — it is computed by the renderer, so any page number would be invented |
+| `.csv`, `.tsv` | one document per **row** | `data.csv#4 (r.5)` | a row is a record; cutting a flattened sheet every 350 characters produces chunks straddling unrelated records |
+
+CSV rows keep their column names: a row is embedded as
+`chunk_size: 350 | overlap: 70 | top_k: 5` rather than `350, 70, 5`, so the
+words a question would use are actually present in the text. The repetition
+costs storage and buys retrievability.
+
+![Three questions, each answered from a different format: a merged PDF page range, a Word file, and a CSV row](docs/screenshots/multi-format-citations.png)
+
+Three questions in one run, each answered from a different format. The first
+cites `pipeline-slides.pdf#2 (pp.6-7)` — two slide pages merged into one chunk.
+The second cites a Word file with no page number, because a `.docx` has none to
+give. The third cites `measurements.csv#4 (r.5)`, a single spreadsheet row.
+
+### What testing a real PDF changed
+
+The loader had supported PDFs since it was written. It had never been *run* on
+one, because the dataset was Markdown only — and untested code is worse than
+missing code, because it looks finished.
+
+The first real PDF, a 31-page lecture deck, exposed a problem no Markdown file
+could have. Each format's natural unit is a wildly different size:
+
+| Format | Unit | Characters per unit |
+| --- | --- | --- |
+| `.csv` | row | 180 |
+| `.pdf` | page | 383 — the lecture deck alone averaged 223 |
+| `.docx` | file | 1,636 |
+| `.md` | file | 15,916 |
+
+`CHUNK_SIZE=350` was tuned against files of 8–34 KB, where every chunk fills. A
+223-character slide page cannot fill a 350-character chunk, and since each
+document is chunked independently, pages could never combine to help. Measured
+on that deck: smallest chunk **47 characters**, **38%** under 200. A chunk
+holding one slide title describes almost nothing, yet still occupies a slot in
+the top-k.
+
+`merge_short_pages` joins consecutive short pages from the same PDF until they
+approach the chunk size, and the citation becomes a page *range*. CSV rows are
+never merged — joining two records would describe neither.
+
+| PDF chunks, committed dataset | Unmerged | Merged |
+| --- | --- | --- |
+| count | 18 | 14 |
+| smallest | 83 | 154 |
+| mean | 226 | 292 |
+| under 200 characters | 44% | **7%** |
+
+### Why the chunk size did not change
+
+A sweep said 500 was better than 350 for PDFs — 2% of chunks under 200
+characters instead of 24%. Both were then ingested and asked the same seven
+questions, one per format, each targeting a fact appearing in only one file.
+
+Both resolved 7 of 7 to the correct source, but the mean top score was **0.5772
+at 350 against 0.5085 at 500**, and the slide-deck questions were far weaker at
+500 — 0.4296 against 0.6157, and 0.3923 against 0.6561. The citations show why:
+`pp.1-4` instead of `pp.1-2`. A larger chunk merges *more* pages, reintroducing
+the same dilution that 900-character chunks caused on Markdown.
+
+So `CHUNK_SIZE` stayed at 350 and the merge was the real fix. Second time a size
+distribution has pointed the wrong way in this project.
+→ [Read more](notes/learning-log.md#11-formats-other-than-markdown)
 
 ---
 
@@ -616,7 +706,7 @@ but it stores no metadata, so I would have had to build and keep in sync a
 parallel store just to know which file each embedding came from — and citations
 are the whole point of this tool.
 
-At 317 chunks all three would return the same answers. The deciding factor was
+At 343 chunks all three would return the same answers. The deciding factor was
 which one taught me the concept with the least incidental complexity, and which
 one a reviewer could run without signing up for anything.
 

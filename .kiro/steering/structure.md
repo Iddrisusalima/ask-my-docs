@@ -17,8 +17,10 @@ ASK-MY-DOCS/
 │   ├── __init__.py
 │   ├── console.py           # UTF-8 stdout, so cp1252 cannot crash on a dash
 │   ├── config.py            # reads .env, one place that knows the defaults
-│   ├── loader.py            # read .md, .txt and .pdf from a folder
-│   ├── chunker.py           # overlapping windows, cut on a soft boundary
+│   ├── loader.py            # read .md, .txt, .pdf, .docx and .csv; each format
+│   │                        # split at its own natural unit
+│   ├── chunker.py           # overlapping windows, cut on a soft boundary,
+│   │                        # short PDF pages merged first
 │   ├── embedder.py          # text -> embeddings, local or OpenAI
 │   ├── similarity.py        # hand-written cosine similarity
 │   ├── store.py             # Chroma wrapper, cosine space
@@ -37,7 +39,8 @@ ASK-MY-DOCS/
 ├── docs/
 │   ├── architecture.drawio          # detailed, for the mentor
 │   ├── architecture-overview.drawio # recruiter-facing
-│   └── screenshots/                 # evidence for README claims
+│   └── screenshots/                 # evidence for README claims, generated
+│                                    # by presentation/render_terminal.py
 ├── presentation/            # gitignored: decks, demo script, mentor questions
 ├── sample-notes/            # committed test dataset, non-sensitive
 ├── logs/                    # gitignored retrieval logs

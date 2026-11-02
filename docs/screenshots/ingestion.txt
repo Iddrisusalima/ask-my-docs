@@ -4,23 +4,25 @@
 STEP 1  Load
 ========================================================================
 [loader] C:\Users\hp\Desktop\ASK-MY-DOCS\sample-notes
-[loader] 5 file(s) found -> 5 document(s) (0 PDF page(s)), 79,581 characters
-5 file(s) -> 5 document(s)
+[loader] 9 file(s) found (1 .csv, 1 .docx, 5 .md, 2 .pdf)
+[loader] -> 20 document(s): 6 whole file(s), 9 PDF page(s), 5 CSV row(s), 85,567 characters
+[loader] warning: retrieval-settings.docx: 11 table cell(s) included alongside the paragraphs.
+9 file(s) -> 20 document(s)
 ========================================================================
 STEP 2  Chunk
 ========================================================================
-chunk_size=350, overlap=70 -> 317 chunks, mean 319.9 chars (min 162, max 350)
+chunk_size=350, overlap=70 -> 343 chunks, mean 316.2 chars (min 154, max 350)
 ========================================================================
 STEP 3  Embed
 ========================================================================
 model:      local:sentence-transformers/all-MiniLM-L6-v2
 dimensions: 384
-embedded:   317 chunks in 38.28s (120.7ms each)
+embedded:   343 chunks in 33.03s (96.3ms each)
 ========================================================================
 STEP 4  Index into Chroma
 ========================================================================
-collection already holds 317 chunks - rebuilding from scratch
-indexed:    317 chunks in 0.68s
+collection already holds 343 chunks - rebuilding from scratch
+indexed:    343 chunks in 0.65s
 database:   C:\Users\hp\Desktop\ASK-MY-DOCS\chroma_db
 collection: notes
 HNSW settings Chroma is using:
@@ -36,9 +38,9 @@ HNSW settings Chroma is using:
 ========================================================================
 STEP 5  Confirm it persisted
 ========================================================================
-reopened from disk: 317 chunks
+reopened from disk: 343 chunks
 recorded model:     local:sentence-transformers/all-MiniLM-L6-v2
-Friday's store was a Python list and vanished when the process exited.
+The in-memory store was a Python list and vanished when the process exited.
 Every question meant re-embedding the whole corpus first - 30 seconds
 before answering anything. This survives restarts, so that cost is now
 paid once per change to the notes instead of once per run.
@@ -55,25 +57,25 @@ turns that silence into an error message.
 STEP 7  Approximate index vs exact scan
 ========================================================================
 Q: Why does overlap between chunks matter?
-   Chroma HNSW :    4.4ms
-   exact scan  :   35.1ms
+   Chroma HNSW :    3.7ms
+   exact scan  :   23.5ms
    agreement   : 5/5 of the top-5
    rank  chunk (Chroma)                  distance  similarity
-   1     project1-build-log.md#116         0.6269      0.3731
-   2     project1-build-log.md#117         0.6633      0.3367
-   3     project1-blog-post.md#17          0.7343      0.2657
-   4     project1-build-log.md#115         0.7510      0.2490
-   5     project1-blog-post.md#23          0.7512      0.2488
+   1     pipeline-report.pdf#1 (p.1)       0.5120      0.4880
+   2     retrieval-settings.docx#4         0.5512      0.4488
+   3     retrieval-settings.docx#0         0.5701      0.4299
+   4     project1-build-log.md#116         0.6269      0.3731
+   5     project1-build-log.md#117         0.6633      0.3367
 Q: How should I choose how many results to retrieve?
-   Chroma HNSW :    5.6ms
-   exact scan  :   35.9ms
+   Chroma HNSW :    4.0ms
+   exact scan  :   30.9ms
    agreement   : 5/5 of the top-5
    rank  chunk (Chroma)                  distance  similarity
-   1     project1-build-log.md#57          0.7306      0.2694
-   2     project1-build-log.md#48          0.7392      0.2608
-   3     project1-build-log.md#23          0.7400      0.2600
-   4     project1-build-log.md#56          0.7461      0.2539
-   5     project1-build-log.md#9           0.7534      0.2466
+   1     pipeline-report.pdf#0 (p.1)       0.6559      0.3441
+   2     pipeline-slides.pdf#0 (pp.1-2)    0.6630      0.3370
+   3     pipeline-report.pdf#5 (p.1)       0.6700      0.3300
+   4     pipeline-slides.pdf#2 (pp.6-7)    0.6714      0.3286
+   5     pipeline-report.pdf#9 (p.1)       0.6746      0.3254
 Overall agreement with the exact scan: 10/10 (100%)
 100% at this corpus size, which is expected rather than reassuring. With
 only a few hundred chunks the HNSW graph is small enough that a greedy
@@ -84,10 +86,10 @@ index is wired up correctly - it does not demonstrate that approximate
 search is free.
 Note the distance-to-similarity conversion above: cosine distance 0.0 means
 identical direction, so similarity = 1 - distance puts these back on the original
-scale where higher is better. src/retriever.py does this conversion once, on
-Wednesday, so nothing downstream has to remember which way round it is.
+scale where higher is better. src/retriever.py does this conversion once, at the
+boundary, so nothing downstream has to remember which way round it is.
 ========================================================================
 Done
 ========================================================================
-317 chunks indexed and queryable.
-Next: Wed-Thu, the retrieval function and tuning top-k.
+343 chunks indexed and queryable.
+Next: the retrieval function, and tuning top-k.

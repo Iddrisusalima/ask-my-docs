@@ -27,7 +27,12 @@ Pinned in `requirements.txt`. Installed with:
 | `sentence-transformers` | 3.3.1 | local embedding model (pulls torch, CPU build) |
 | `openai` | 1.59.6 | optional embedding backend, and the chat model used for generation |
 | `pypdf` | 5.1.0 | PDF text extraction |
+| `python-docx` | 1.1.2 | Word document text extraction, paragraphs and tables |
 | `chromadb` | 1.5.9 | vector database |
+
+`.csv` and `.tsv` need nothing beyond the standard library. `pypdf` and
+`python-docx` are single-format readers, not pipelines, so they do not breach
+the no-framework rule.
 
 Before adding anything new, check it against the allow/deny list in
 `learning-guardrails.md`.
